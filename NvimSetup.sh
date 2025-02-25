@@ -93,7 +93,7 @@ fi
 
 # Install tree-sitter CLI
 print_message "Installing tree-sitter CLI"
-npm install -g tree-sitter-cli
+sudo npm install -g tree-sitter-cli
 
 # Verify tree-sitter CLI installation
 if ! command -v tree-sitter &>/dev/null; then

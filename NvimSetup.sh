@@ -31,6 +31,23 @@ else
     fi
 fi
 
+if ! command -v unzip &>/dev/null; then
+    print_message "Installing unzip"
+    if [ -f /etc/debian_version ]; then
+        sudo apt update
+        sudo apt install -y unzip
+    elif [ -f /etc/redhat-release ]; then
+        sudo yum install -y unzip
+    elif [ -f /etc/arch-release ]; then
+        sudo pacman -S --noconfirm unzip
+    elif [ "$(uname)" == "Darwin" ]; then
+        brew install unzip
+    else
+        echo "Unsupported OS. Please install unzip manually."
+        exit 1
+    fi
+fi
+
 # Install vim-plug
 print_message "Installing vim-plug"
 curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \

@@ -67,7 +67,7 @@ if command -v npm &>/dev/null; then
 else
     if [ -f /etc/debian_version ]; then
         curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-        sudo apt install -y nodejs
+        sudo apt install nodejs npm
     elif [ -f /etc/redhat-release ]; then
         curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
         sudo yum install -y nodejs
@@ -85,9 +85,21 @@ fi
 # Ensure npm is in PATH
 export PATH="$PATH:$(npm bin -g)"
 
+# Verify npm installation
+if ! command -v npm &>/dev/null; then
+    echo "npm is not installed correctly. Please check the installation and try again."
+    exit 1
+fi
+
 # Install tree-sitter CLI
 print_message "Installing tree-sitter CLI"
 npm install -g tree-sitter-cli
+
+# Verify tree-sitter CLI installation
+if ! command -v tree-sitter &>/dev/null; then
+    echo "tree-sitter CLI is not installed correctly. Please check the installation and try again."
+    exit 1
+fi
 
 # Install COC extensions
 print_message "Installing COC extensions"

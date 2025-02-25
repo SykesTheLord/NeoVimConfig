@@ -29,12 +29,12 @@ require("mason-lspconfig").setup({
         "jsonls",                          -- JSON
         "yamlls",                          -- YAML
         "omnisharp",                       -- C#/.NET
-        "omnisharp-extended-lsp",          -- Added: Extended OmniSharp LSP
+       -- "omnisharp-extended-lsp",          -- Added: Extended OmniSharp LSP
         "terraformls",                     -- Terraform
         "dockerls",                        -- Docker (Dockerfiles)
         "bashls",                          -- Shell scripting
         "docker_compose_language_service", -- Docker Compose
-        "cmake",                           -- CMake
+        -- "cmake",                           -- CMake
         "jdtls",                           -- Java
         "lua_ls",                          -- Lua
         "marksman",                        -- Markdown
@@ -66,12 +66,12 @@ local servers = {
   "jsonls",
   "yamlls",
   "omnisharp",
-  "omnisharp-extended-lsp",
+  -- "omnisharp-extended-lsp",
   "terraformls",
   "dockerls",
   "bashls",
   "docker_compose_language_service",
-  "cmake",
+  -- "cmake",
   "jdtls",
   "lua_ls",
   "marksman",

@@ -1,235 +1,88 @@
-" Initialize plugin system
+" Begin plugin block
 call plug#begin('~/.local/share/nvim/plugged')
 
-" General plugins
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'tpope/vim-surround'
-Plug 'tpope/vim-commentary'
-Plug 'airblade/vim-gitgutter'
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
+" Mason and LSP configuration plugins
+Plug 'williamboman/mason.nvim'
+Plug 'williamboman/mason-lspconfig.nvim'
+Plug 'neovim/nvim-lspconfig'
+
+" Additional useful plugins
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-Plug 'nvim-lualine/lualine.nvim'
-Plug 'kyazdani42/nvim-web-devicons'
 Plug 'nvim-telescope/telescope.nvim'
-Plug 'nvim-lua/plenary.nvim'
 
-" Language-specific plugins
-" C++, C
-Plug 'dense-analysis/ale'
-Plug 'rhysd/vim-clang-format'
-
-" C#
-Plug 'OmniSharp/omnisharp-vim'
-
-" Python
-Plug 'davidhalter/jedi-vim'
-Plug 'psf/black', { 'do': ':update' }
-
-" Terraform
-Plug 'hashivim/vim-terraform'
-
-" PowerShell
-Plug 'PProvost/vim-ps1'
-
-" Bash
-Plug 'tpope/vim-eunuch'
-
-" Docker
-Plug 'ekalinin/dockerfile.vim'
-
-" Kubernetes
-Plug 'andrewstuart/vim-kubernetes'
-
-" Initialize plugin system
 call plug#end()
 
-" General settings
-syntax enable
-filetype plugin indent on
+" Basic Neovim settings
 set number
-set relativenumber
-set tabstop=4
-set shiftwidth=4
-set expandtab
-set smartindent
-set incsearch
-set hlsearch
-set ignorecase
-set smartcase
-set hidden
-set clipboard=unnamedplus
-set completeopt=menuone,noinsert,noselect
+syntax on
 
-" COC settings
-let g:coc_global_extensions = [
-      \ 'coc-snippets',
-      \ 'coc-tsserver',
-      \ 'coc-eslint',
-      \ 'coc-prettier',
-      \ 'coc-python',
-      \ 'coc-json',
-      \ 'coc-yaml',
-      \ 'coc-clangd',
-      \ 'coc-omnisharp',
-      \ 'coc-terraform',
-      \ 'coc-docker',
-      \ 'coc-sh'
-      \ ]
-
-" ALE settings
-let g:ale_linters = {
-      \ 'c': ['clang'],
-      \ 'cpp': ['clang'],
-      \ 'python': ['flake8'],
-      \ 'sh': ['shellcheck'],
-      \ 'terraform': ['terraform'],
-      \ }
-let g:ale_fixers = {
-      \ 'c': ['clang-format'],
-      \ 'cpp': ['clang-format'],
-      \ 'python': ['black'],
-      \ 'sh': ['shfmt'],
-      \ }
-let g:ale_fix_on_save = 1
-
-" Treesitter settings
-lua << EOF
-require'nvim-treesitter.configs'.setup {
-  ensure_installed = {
-    "bash",
-    "c",
-    "cpp",
-    "css",
-    "dockerfile",
-    "html",
-    "javascript",
-    "json",
-    "lua",
-    "markdown",
-    "python",
-    "rust",
-    "tsx",
-    "typescript",
-    "vim",
-    "yaml",
-    "terraform",
-    "go",
-    "java",
-    "kotlin",
-    "scala",
-    "ruby",
-    "php",
-    "perl",
-    "haskell",
-    "elixir",
-    "erlang",
-    "solidity",
-    "graphql",
-    "sql",
-    "make",
-    "cmake",
-    "proto",
-    "regex",
-    "toml",
-    "xml",
-    "http",
-    "gitignore",
-    "gitattributes",
-    "gitcommit",
-    "diff",
-    "dot",
-    "hcl",
-    "ini",
-    "meson",
-    "ninja",
-    "nix",
-    "rst",
-    "ssh_config",
-    "todotxt",
-    "vimdoc"
-  },
-  highlight = {
-    enable = true,
-  },
-  incremental_selection = {
-    enable = true,
-    keymaps = {
-      init_selection = "gnn",
-      node_incremental = "grn",
-      scope_incremental = "grc",
-      node_decremental = "grm",
+" Mason and native LSP setup via Lua
+lua <<EOF
+-- Initialize Mason and ensure installation of LSP servers
+require("mason").setup()
+require("mason-lspconfig").setup({
+    ensure_installed = {
+        "clangd",                          -- C/C++/ObjC
+        "tsserver",                        -- JavaScript/TypeScript
+        "eslint",                          -- Linting for JS/TS
+        "pyright",                         -- Python
+        "jsonls",                          -- JSON
+        "yamlls",                          -- YAML
+        "omnisharp",                       -- C#/.NET
+        "terraformls",                     -- Terraform
+        "dockerls",                        -- Docker (Dockerfiles)
+        "bashls",                          -- Shell scripting
+        "docker_compose_language_service", -- Docker Compose
+        "cmake",                           -- CMake
+        "jdtls",                           -- Java
+        "lua_ls",                          -- Lua
+        "marksman",                        -- Markdown
+        "nginx-language-server",           -- Nginx (if name mismatch, try "nginxls")
+        "powershell_es",                   -- Powershell
+        "sqls",                            -- SQL
+        "vimls",                           -- VIMscript
+        "bicep",                           -- Bicep
+        "azure_pipelines_ls",              -- Azure Pipelines
+        "ansiblels",                       -- Ansible
     },
-  },
-  indent = {
-    enable = true,
-  },
+    automatic_installation = true,
+})
+
+local lspconfig = require('lspconfig')
+
+-- Custom configuration for clangd (example for C/C++/ObjC)
+lspconfig.clangd.setup {
+  cmd = {"clangd"},
+  filetypes = {"c", "cc", "cpp", "c++", "objc", "objcpp"},
+  root_dir = lspconfig.util.root_pattern("compile_flags.txt", "compile_commands.json")
 }
-EOF
 
-" Lualine settings
-lua << EOF
-require('lualine').setup {
-  options = {
-    icons_enabled = true,
-    theme = 'auto',
-  },
+-- Loop through all servers (except clangd which is configured separately) and set them up with default configurations
+local servers = {
+  "tsserver",
+  "eslint",
+  "pyright",
+  "jsonls",
+  "yamlls",
+  "omnisharp",
+  "terraformls",
+  "dockerls",
+  "bashls",
+  "docker_compose_language_service",
+  "cmake",
+  "jdtls",
+  "lua_ls",
+  "marksman",
+  "nginx-language-server",
+  "powershell_es",
+  "sqls",
+  "vimls",
+  "bicep",
+  "azure_pipelines_ls",
+  "ansiblels",
 }
+
+for _, server in ipairs(servers) do
+  lspconfig[server].setup {}
+end
 EOF
-
-" Telescope settings
-lua << EOF
-require('telescope').setup{
-  defaults = {
-    vimgrep_arguments = {
-      'rg',
-      '--color=never',
-      '--no-heading',
-      '--with-filename',
-      '--line-number',
-      '--column',
-      '--smart-case'
-    },
-    prompt_prefix = "> ",
-    selection_caret = "> ",
-    entry_prefix = "  ",
-    initial_mode = "insert",
-    selection_strategy = "reset",
-    sorting_strategy = "descending",
-    layout_strategy = "horizontal",
-    layout_config = {
-      horizontal = {
-        mirror = false,
-      },
-      vertical = {
-        mirror = false,
-      },
-    },
-    file_sorter =  require'telescope.sorters'.get_fuzzy_file,
-    file_ignore_patterns = {},
-    generic_sorter =  require'telescope.sorters'.get_generic_fuzzy_sorter,
-    path_display = {"truncate"},
-    winblend = 0,
-    border = {},
-    borderchars = {'|', '|', '-', '-', '+', '+', '+', '+'},
-    color_devicons = true,
-    use_less = true,
-    set_env = { ['COLORTERM'] = 'truecolor' }, -- default = nil,
-    file_previewer = require'telescope.previewers'.vim_buffer_cat.new,
-    grep_previewer = require'telescope.previewers'.vim_buffer_vimgrep.new,
-    qflist_previewer = require'telescope.previewers'.vim_buffer_qflist.new,
-
-    -- Developer configurations: Not meant for general override
-    buffer_previewer_maker = require'telescope.previewers'.buffer_previewer_maker
-  }
-}
-EOF
-
-" Key mappings
-nnoremap <leader>ff <cmd>Telescope find_files<cr>
-nnoremap <leader>fg <cmd>Telescope live_grep<cr>
-nnoremap <leader>fb <cmd>Telescope buffers<cr>
-nnoremap <leader>fh <cmd>Telescope help_tags<cr>
-
-" Format on save
-autocmd BufWritePre *.c,*.cpp,*.h,*.hpp,*.py,*.sh lua vim.lsp.buf.formatting_sync()

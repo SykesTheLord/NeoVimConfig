@@ -52,22 +52,14 @@ git clone "$CONFIG_REPO" "$CONFIG_DIR"
 print_message "Installing plugins"
 nvim +PlugInstall +qall
 
-# Install Python dependencies for COC
-print_message "Installing Python dependencies for COC"
-if [ -f /etc/debian_version ]; then
-    sudo apt install -y python3-neovim python3-pynvim
-else
-    pip3 install --user pynvim
-fi
-
-# Install Node.js version 18 and npm (required for COC)
+# Install Node.js version 18 and npm (for general tooling)
 print_message "Installing Node.js version 18 and npm"
 if command -v npm &>/dev/null; then
     echo "npm is already installed."
 else
     if [ -f /etc/debian_version ]; then
         curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-        sudo apt install nodejs npm
+        sudo apt install -y nodejs npm
     elif [ -f /etc/redhat-release ]; then
         curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
         sudo yum install -y nodejs
@@ -101,8 +93,9 @@ if ! command -v tree-sitter &>/dev/null; then
     exit 1
 fi
 
-# Install COC extensions
-print_message "Installing COC extensions"
-nvim +'CocInstall -sync coc-snippets coc-tsserver coc-eslint coc-prettier coc-python coc-json coc-yaml coc-clangd coc-omnisharp coc-terraform coc-docker coc-sh' +qall
+# sudo npm install -g @ansible/ansible-language-server
+# sudo npm install -g azure-pipelines-language-server
+# sudo npm i -g bash-language-server
+
 
 print_message "Setup complete! You can now start Neovim with 'nvim'."

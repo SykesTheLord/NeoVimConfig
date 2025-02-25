@@ -38,7 +38,7 @@ curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
 
 # Clone the configuration repository from GitHub
 print_message "Cloning configuration repository from GitHub"
-CONFIG_REPO="https://github.com/yourusername/your-neovim-config.git"
+CONFIG_REPO="https://github.com/SykesTheLord/NeoVimConfig.git"
 CONFIG_DIR="$HOME/.config/nvim"
 
 if [ -d "$CONFIG_DIR" ]; then

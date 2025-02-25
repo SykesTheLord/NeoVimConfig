@@ -100,7 +100,6 @@ require'nvim-treesitter.configs'.setup {
     "bash",
     "c",
     "cpp",
-    "csv",
     "css",
     "dockerfile",
     "html",
@@ -119,7 +118,6 @@ require'nvim-treesitter.configs'.setup {
     "java",
     "kotlin",
     "scala",
-    "swift",
     "ruby",
     "php",
     "perl",
@@ -139,8 +137,6 @@ require'nvim-treesitter.configs'.setup {
     "gitignore",
     "gitattributes",
     "gitcommit",
-    "gitrebase",
-    "comment",
     "diff",
     "dot",
     "hcl",
@@ -148,12 +144,10 @@ require'nvim-treesitter.configs'.setup {
     "meson",
     "ninja",
     "nix",
-    "pkgconfig",
     "rst",
     "ssh_config",
     "todotxt",
-    "vimdoc",
-    "zsh"
+    "vimdoc"
   },
   highlight = {
     enable = true,

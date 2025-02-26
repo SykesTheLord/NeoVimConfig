@@ -14,6 +14,11 @@ print_message() {
 print_message "Installing Neovim"
 if command -v nvim &>/dev/null; then
     echo "Neovim is already installed."
+
+elif [ -f "/etc/arch-release" ]; then
+
+    sudo pacman -S neovim
+
 else
     curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
     sudo rm -rf /opt/nvim

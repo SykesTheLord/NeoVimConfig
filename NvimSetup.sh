@@ -64,6 +64,8 @@ git clone "$CONFIG_REPO" "$CONFIG_DIR"
 print_message "Installing plugins"
 nvim +PlugInstall +qall
 
+sleep 300
+
 # Install Node.js version 18 and npm (for general tooling)
 print_message "Installing Node.js version 18 and npm"
 if command -v npm &>/dev/null; then

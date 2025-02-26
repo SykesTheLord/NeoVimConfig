@@ -7,24 +7,25 @@ Plug 'williamboman/mason-lspconfig.nvim'
 Plug 'neovim/nvim-lspconfig'
 
 " OmniSharp Extended LSP plugin
-Plug 'git@github.com:Hoffs/omnisharp-extended-lsp.nvim'
+Plug 'Hoffs/omnisharp-extended-lsp.nvim'
 
 " Autocompletion plugins (nvim-cmp and sources)
 Plug 'hrsh7th/nvim-cmp'               " Completion engine
 Plug 'hrsh7th/cmp-nvim-lsp'           " LSP source for nvim-cmp
 Plug 'hrsh7th/cmp-buffer'            " Buffer word completion source
 Plug 'hrsh7th/cmp-path'              " Filesystem path completion source
-Plug 'L3MON4D3/LuaSnip'              " Snippet engine
-Plug 'saadparwaiz1/cmp_luasnip'       " LuaSnip source for nvim-cmp
-Plug 'rafamadriz/friendly-snippets'  " Snippet collection
+Plug 'L3MON4D3/LuaSnip'               " Snippet engine
+Plug 'saadparwaiz1/cmp_luasnip'        " LuaSnip source for nvim-cmp
+Plug 'rafamadriz/friendly-snippets'   " Snippet collection
 
 " Additional useful plugins
-Plug 'nvim-lua/plenary.nvim'         " Required by telescope.nvim
+Plug 'nvim-lua/plenary.nvim'          " Required by telescope.nvim
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'preservim/nerdtree'
 Plug 'mfussenegger/nvim-dap'
 Plug 'Mofiqul/dracula.nvim'
+Plug 'aquasecurity/vim-trivy'
 
 call plug#end()
 
@@ -65,17 +66,14 @@ require("mason-lspconfig").setup({
         "pyright",
         "jsonls",
         "yamlls",
-		"omnisharp",
-        -- Note: OmniSharp will be handled by the extended plugin below
+        "omnisharp",  -- Removed because OmniSharp Extended plugin handles OmniSharp
         "terraformls",
         "dockerls",
         "bashls",
         "docker_compose_language_service",
-        -- "cmake",        -- example of additional LSP
         "jdtls",
         "lua_ls",
         "marksman",
-        -- "nginxls",      -- Nginx LSP (ensure correct name if using)
         "powershell_es",
         "sqls",
         "vimls",
@@ -117,29 +115,53 @@ lspconfig.ansiblels.setup { capabilities = capabilities }
 lspconfig.bicep.setup { capabilities = capabilities }
 lspconfig.azure_pipelines_ls.setup { capabilities = capabilities }
 
--- Setup OmniSharp Extended LSP
--- This plugin provides extended support for OmniSharp.
-require("omnisharp").setup({
-  serverOptions = {
-    cmd = { "dotnet", "/home/jasb/omnisharp/OmniSharp.dll" },  -- adjust path as needed
-  },
-  capabilities = capabilities,
-  filetypes = { "cs", "vb" },
-  settings = {
-    FormattingOptions = {
-      EnableEditorConfigSupport = true,
-      OrganizeImports = nil,
+
+-- Setup Omnisharp
+require'lspconfig'.omnisharp.setup {
+    cmd = { "dotnet", "/home/jasb/omnisharp/OmniSharp.dll" },
+
+    settings = {
+      FormattingOptions = {
+        -- Enables support for reading code style, naming convention and analyzer
+        -- settings from .editorconfig.
+        EnableEditorConfigSupport = true,
+        -- Specifies whether 'using' directives should be grouped and sorted during
+        -- document formatting.
+        OrganizeImports = nil,
+      },
+      MsBuild = {
+        -- If true, MSBuild project system will only load projects for files that
+        -- were opened in the editor. This setting is useful for big C# codebases
+        -- and allows for faster initialization of code navigation features only
+        -- for projects that are relevant to code that is being edited. With this
+        -- setting enabled OmniSharp may load fewer projects and may thus display
+        -- incomplete reference lists for symbols.
+        LoadProjectsOnDemand = nil,
+      },
+      RoslynExtensionsOptions = {
+        -- Enables support for roslyn analyzers, code fixes and rulesets.
+        EnableAnalyzersSupport = true,
+        -- Enables support for showing unimported types and unimported extension
+        -- methods in completion lists. When committed, the appropriate using
+        -- directive will be added at the top of the current file. This option can
+        -- have a negative impact on initial completion responsiveness,
+        -- particularly for the first few completion sessions after opening a
+        -- solution.
+        EnableImportCompletion = true,
+        -- Only run analyzers against open files when 'enableRoslynAnalyzers' is
+        -- true
+        AnalyzeOpenDocumentsOnly = nil,
+      },
+      Sdk = {
+        -- Specifies whether to include preview versions of the .NET SDK when
+        -- determining which version to use for project loading.
+        IncludePrereleases = true,
+      },
     },
-    RoslynExtensionsOptions = {
-      EnableImportCompletion = nil,
-      AnalyzeOpenDocumentsOnly = nil,
-	  enableDecompilationSupport = true,
-    },
-    Sdk = {
-      IncludePrereleases = true,
-    },
-  },
-})
+	capabilities = capabilities,
+}
+
+
 
 -- Setup nvim-cmp autocompletion
 local cmp = require('cmp')
@@ -186,34 +208,43 @@ cmp.setup({
 })
 EOF
 
--- ===============================
--- Additional Key Mappings
--- ===============================
--- Terminal mode mapping: allow <Esc> to exit terminal insert mode
+
+" ===============================
+" Additional Key Mappings
+" ===============================
+" Terminal mode mapping: allow <Esc> to exit terminal insert mode
 tnoremap <Esc> <C-\><C-n>
--- Terminal mode mappings: window navigation using Alt+h/j/k/l
+" Terminal mode mappings: window navigation using Alt+h/j/k/l
 tnoremap <A-h> <C-\><C-N><C-w>h
 tnoremap <A-j> <C-\><C-N><C-w>j
 tnoremap <A-k> <C-\><C-N><C-w>k
 tnoremap <A-l> <C-\><C-N><C-w>l
 
--- Insert mode mappings: window navigation using Alt+h/j/k/l
+" Insert mode mappings: window navigation using Alt+h/j/k/l
 inoremap <A-h> <C-\><C-N><C-w>h
 inoremap <A-j> <C-\><C-N><C-w>j
 inoremap <A-k> <C-\><C-N><C-w>k
 inoremap <A-l> <C-\><C-N><C-w>l
 
--- Normal mode mappings: window navigation using Alt+h/j/k/l
+" Normal mode mappings: window navigation using Alt+h/j/k/l
 nnoremap <A-h> <C-w>h
 nnoremap <A-j> <C-w>j
 nnoremap <A-k> <C-w>k
 nnoremap <A-l> <C-w>l
 
-
--- Commands for omnisharp-extended
-
+" Commands for omnisharp-extended
 nnoremap gr <cmd>lua require('omnisharp_extended').telescope_lsp_references()<cr>
--- options are supported as well
 nnoremap gd <cmd>lua require('omnisharp_extended').telescope_lsp_definition({ jump_type = "vsplit" })<cr>
 nnoremap <leader>D <cmd>lua require('omnisharp_extended').telescope_lsp_type_definition()<cr>
 nnoremap gi <cmd>lua require('omnisharp_extended').telescope_lsp_implementation()<cr>
+" replaces vim.lsp.buf.definition()
+nnoremap gd <cmd>lua require('omnisharp_extended').lsp_definition()<cr>
+
+" replaces vim.lsp.buf.type_definition()
+nnoremap <leader>D <cmd>lua require('omnisharp_extended').lsp_type_definition()<cr>
+
+" replaces vim.lsp.buf.references()
+nnoremap gr <cmd>lua require('omnisharp_extended').lsp_references()<cr>
+
+" replaces vim.lsp.buf.implementation()
+nnoremap gi <cmd>lua require('omnisharp_extended').lsp_implementation()<cr>

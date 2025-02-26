@@ -15,20 +15,10 @@ print_message "Installing Neovim"
 if command -v nvim &>/dev/null; then
     echo "Neovim is already installed."
 else
-    if [ -f /etc/debian_version ]; then
-        sudo apt update
-        sudo apt install -y neovim
-    elif [ -f /etc/redhat-release ]; then
-        sudo yum install -y epel-release
-        sudo yum install -y neovim
-    elif [ -f /etc/arch-release ]; then
-        sudo pacman -S --noconfirm neovim
-    elif [ "$(uname)" == "Darwin" ]; then
-        brew install neovim
-    else
-        echo "Unsupported OS. Please install Neovim manually."
-        exit 1
-    fi
+    curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
+    sudo rm -rf /opt/nvim
+    sudo tar -C /opt -xzf nvim-linux-x86_64.tar.gz
+    export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 fi
 
 if ! command -v unzip &>/dev/null; then

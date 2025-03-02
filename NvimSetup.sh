@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Exit immediately if a command exits with a non-zero status
 set -e
 
@@ -14,11 +13,12 @@ print_message() {
 print_message "Installing Neovim"
 if command -v nvim &>/dev/null; then
     echo "Neovim is already installed."
-
 elif [ -f "/etc/arch-release" ]; then
-
-    sudo pacman -S neovim
-
+    sudo pacman -S --noconfirm neovim
+elif [ -f "/etc/fedora-release" ]; then
+    sudo dnf install -y neovim
+elif grep -qi "opensuse" /etc/os-release; then
+    sudo zypper install -y neovim
 else
     curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
     sudo rm -rf /opt/nvim
@@ -26,15 +26,18 @@ else
     export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 fi
 
+# Install unzip if not installed
 if ! command -v unzip &>/dev/null; then
     print_message "Installing unzip"
     if [ -f /etc/debian_version ]; then
         sudo apt update
         sudo apt install -y unzip
+    elif [ -f "/etc/fedora-release" ]; then
+        sudo dnf install -y unzip
     elif [ -f /etc/redhat-release ]; then
         sudo yum install -y unzip
-    elif [ -f /etc/arch-release ]; then
-        sudo pacman -S --noconfirm unzip
+    elif grep -qi "opensuse" /etc/os-release; then
+        sudo zypper install -y unzip
     elif [ "$(uname)" == "Darwin" ]; then
         brew install unzip
     else
@@ -74,11 +77,14 @@ else
     if [ -f /etc/debian_version ]; then
         curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
         sudo apt install -y nodejs npm
+    elif [ -f "/etc/fedora-release" ]; then
+        curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+        sudo dnf install -y nodejs npm
     elif [ -f /etc/redhat-release ]; then
         curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
         sudo yum install -y nodejs
-    elif [ -f /etc/arch-release ]; then
-        sudo pacman -S --noconfirm nodejs npm
+    elif grep -qi "opensuse" /etc/os-release; then
+        sudo zypper install -y nodejs npm
     elif [ "$(uname)" == "Darwin" ]; then
         brew install node@18
         brew link --force node@18
@@ -106,10 +112,5 @@ if ! command -v tree-sitter &>/dev/null; then
     echo "tree-sitter CLI is not installed correctly. Please check the installation and try again."
     exit 1
 fi
-
-# sudo npm install -g @ansible/ansible-language-server
-# sudo npm install -g azure-pipelines-language-server
-# sudo npm i -g bash-language-server
-
 
 print_message "Setup complete! You can now start Neovim with 'nvim'."

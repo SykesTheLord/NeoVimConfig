@@ -61,6 +61,10 @@ if [ -d "$CONFIG_DIR" ]; then
     mv "$CONFIG_DIR" "$CONFIG_DIR.bak"
 fi
 
+wget https://go.dev/dl/go1.24.0.linux-amd64.tar.gz
+rm -rf /usr/local/go && tar -C /usr/local -xzf go1.24.0.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+
 git clone "$CONFIG_REPO" "$CONFIG_DIR"
 
 # Install plugins

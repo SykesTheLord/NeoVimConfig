@@ -75,7 +75,7 @@ require("mason-lspconfig").setup({
         "lua_ls",
         "marksman",
         "powershell_es",
-        "sqls",
+        "cmake",
         "vimls",
         "bicep",
         "azure_pipelines_ls",

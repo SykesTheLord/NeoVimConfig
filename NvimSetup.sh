@@ -65,7 +65,7 @@ git clone "$CONFIG_REPO" "$CONFIG_DIR"
 
 # Install plugins
 print_message "Installing plugins"
-zsh -c "nvim +PlugInstall +qall"
+nvim +PlugInstall +qall &
 
 sleep 300
 

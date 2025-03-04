@@ -64,8 +64,7 @@ require("mason-lspconfig").setup({
         "clangd",
         "eslint",
         "pyright",
-        "jsonls",
-        "yamlls",
+        "jsonls", 
         "omnisharp",  -- Removed because OmniSharp Extended plugin handles OmniSharp
         "terraformls",
         "dockerls",
@@ -92,21 +91,6 @@ lspconfig.clangd.setup { capabilities = capabilities }
 lspconfig.eslint.setup { capabilities = capabilities }
 lspconfig.pyright.setup { capabilities = capabilities }
 lspconfig.jsonls.setup { capabilities = capabilities }
-lspconfig.yamlls.setup {
-    capabilities = capabilities,
-    filetypes = { "yaml", "yml" },
-    root_dir = function(fname)
-      return vim.loop.cwd()
-    end,
-    settings = {
-      yaml = {
-        validate = true,
-        schemas = {}  -- Optionally map schemas here if needed.
-      }
-    }
-}
-
-lspconfig.terraformls.setup { capabilities = capabilities }
 lspconfig.dockerls.setup { capabilities = capabilities }
 lspconfig.bashls.setup { capabilities = capabilities }
 lspconfig.docker_compose_language_service.setup { capabilities = capabilities }

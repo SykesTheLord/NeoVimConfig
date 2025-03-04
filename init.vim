@@ -14,9 +14,12 @@ Plug 'hrsh7th/nvim-cmp'               " Completion engine
 Plug 'hrsh7th/cmp-nvim-lsp'           " LSP source for nvim-cmp
 Plug 'hrsh7th/cmp-buffer'            " Buffer word completion source
 Plug 'hrsh7th/cmp-path'              " Filesystem path completion source
+Plug 'hrsh7th/cmp-cmdline'           " nvim-cmp source for vim's cmdline.
 Plug 'L3MON4D3/LuaSnip'               " Snippet engine
 Plug 'saadparwaiz1/cmp_luasnip'        " LuaSnip source for nvim-cmp
 Plug 'rafamadriz/friendly-snippets'   " Snippet collection
+Plug 'ray-x/cmp-sql' " nvim-cmp source for sql keywords.
+Plug 'hrsh7th/cmp-nvim-lsp-signature-help' " nvim-cmp source for displaying function signatures with the current parameter emphasized
 
 " Additional useful plugins
 Plug 'nvim-lua/plenary.nvim'          " Required by telescope.nvim
@@ -26,6 +29,7 @@ Plug 'preservim/nerdtree'
 Plug 'mfussenegger/nvim-dap'
 Plug 'Mofiqul/dracula.nvim'
 Plug 'aquasecurity/vim-trivy'
+
 
 call plug#end()
 
@@ -190,6 +194,10 @@ cmp.setup({
       luasnip.lsp_expand(args.body)
     end,
   },
+  window = {
+    completion = cmp.config.window.bordered(),
+    documentation = cmp.config.window.bordered(),
+  },
   mapping = cmp.mapping.preset.insert({
     ["<C-b>"] = cmp.mapping.scroll_docs(-4),
     ["<C-f>"] = cmp.mapping.scroll_docs(4),
@@ -220,9 +228,25 @@ cmp.setup({
     { name = "luasnip" },
     { name = "buffer" },
     { name = "path" },
+    { name = "sql" },
+    { name = "nvim_lsp_signature_help" },
+    
   })
+  
 })
-
+cmp.setup.cmdline(':', {
+      mapping = cmp.mapping.preset.cmdline(),
+      sources = cmp.config.sources({
+        { name = 'path' }
+      }, {
+        {
+          name = 'cmdline',
+          option = {
+            ignore_cmds = { 'Man', '!' }
+          }
+        }
+      })
+    })
 
 -- Setup clipboard handling
 if vim.fn.has("wsl") == 1 then

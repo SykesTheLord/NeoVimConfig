@@ -64,7 +64,8 @@ require("mason-lspconfig").setup({
         "clangd",
         "eslint",
         "pyright",
-        "jsonls", 
+        "jsonls",
+        "yamlls",
         "omnisharp",  -- Removed because OmniSharp Extended plugin handles OmniSharp
         "terraformls",
         "dockerls",
@@ -77,7 +78,6 @@ require("mason-lspconfig").setup({
         "cmake",
         "vimls",
         "bicep",
-        "azure_pipelines_ls",
         "ansiblels",
     },
     automatic_installation = true,
@@ -110,7 +110,26 @@ lspconfig.sqls.setup { capabilities = capabilities }
 lspconfig.vimls.setup { capabilities = capabilities }
 lspconfig.ansiblels.setup { capabilities = capabilities }
 lspconfig.bicep.setup { capabilities = capabilities }
-lspconfig.azure_pipelines_ls.setup { capabilities = capabilities }
+lspconfig.yamlls.setup({
+  capabilities = capabilities,
+  filetypes = { "yaml", "yml" },
+  root_dir = function(fname)
+    return vim.loop.cwd()
+  end,
+  settings = {
+    yaml = {
+      validate = true,
+      schemaStore = {
+        enable = true, -- use schemastore for automatic schema resolution
+        url = "https://www.schemastore.org/api/json/catalog.json"
+      },
+      -- Map the Azure Pipelines schema to azure-pipelines.yaml files
+      schemas = {
+        ["https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json"] = "azure-pipelines.yaml"
+      }
+    }
+  }
+})
 
 
 -- Setup Omnisharp

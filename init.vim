@@ -92,7 +92,20 @@ lspconfig.clangd.setup { capabilities = capabilities }
 lspconfig.eslint.setup { capabilities = capabilities }
 lspconfig.pyright.setup { capabilities = capabilities }
 lspconfig.jsonls.setup { capabilities = capabilities }
-lspconfig.yamlls.setup { capabilities = capabilities }
+lspconfig.yamlls.setup {
+    capabilities = capabilities,
+    filetypes = { "yaml", "yml" },
+    root_dir = function(fname)
+      return vim.loop.cwd()
+    end,
+    settings = {
+      yaml = {
+        validate = true,
+        schemas = {}  -- Optionally map schemas here if needed.
+      }
+    }
+}
+
 lspconfig.terraformls.setup { capabilities = capabilities }
 lspconfig.dockerls.setup { capabilities = capabilities }
 lspconfig.bashls.setup { capabilities = capabilities }
@@ -118,7 +131,7 @@ lspconfig.azure_pipelines_ls.setup { capabilities = capabilities }
 
 -- Setup Omnisharp
 require'lspconfig'.omnisharp.setup {
-    cmd = { "dotnet", "/home/jasb/omnisharp/OmniSharp.dll" },
+    cmd = { "dotnet", vim.fn.expand("~/.local/share/nvim/mason/packages/omnisharp/libexec/OmniSharp.dll") },
 
     settings = {
       FormattingOptions = {
@@ -206,6 +219,54 @@ cmp.setup({
     { name = "path" },
   })
 })
+
+
+-- Setup clipboard handling
+if vim.fn.has("wsl") == 1 then
+  -- WSL: Use win32yank for clipboard operations
+  vim.g.clipboard = {
+    name = "win32yank-wsl",
+    copy = {
+      ["+"] = "win32yank.exe -i --crlf",
+      ["*"] = "win32yank.exe -i --crlf"
+    },
+    paste = {
+      ["+"] = "win32yank.exe -o --lf",
+      ["*"] = "win32yank.exe -o --lf"
+    },
+    cache_enabled = 0,
+  }
+elseif vim.env.XDG_SESSION_TYPE == "wayland" or vim.env.WAYLAND_DISPLAY then
+  -- Wayland: Use wl-copy and wl-paste
+  vim.g.clipboard = {
+    name = "wayland",
+    copy = {
+      ["+"] = "wl-copy",
+      ["*"] = "wl-copy"
+    },
+    paste = {
+      ["+"] = "wl-paste",
+      ["*"] = "wl-paste"
+    },
+    cache_enabled = 0,
+  }
+else
+  -- Fallback for X11: Use xclip
+  vim.g.clipboard = {
+    name = "x11",
+    copy = {
+      ["+"] = "xclip -selection clipboard",
+      ["*"] = "xclip -selection primary",
+    },
+    paste = {
+      ["+"] = "xclip -selection clipboard -o",
+      ["*"] = "xclip -selection primary -o",
+    },
+    cache_enabled = 0,
+  }
+end
+
+
 EOF
 
 
@@ -248,3 +309,4 @@ nnoremap gr <cmd>lua require('omnisharp_extended').lsp_references()<cr>
 
 " replaces vim.lsp.buf.implementation()
 nnoremap gi <cmd>lua require('omnisharp_extended').lsp_implementation()<cr>
+

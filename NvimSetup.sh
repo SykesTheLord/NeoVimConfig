@@ -83,8 +83,7 @@ else
         sudo zypper install -y go
 
     else
-        echo "Unsupported OS. Please install GO manually."
-        exit 1
+        echo "Unsupported OS. Please install GO manually." >> toDo.txt
     fi
 fi
 
@@ -116,7 +115,8 @@ else
         brew install node@18
         brew link --force node@18
     else
-        echo "Unsupported OS. Please install Node.js version 18 and npm manually."
+        echo 'Unsupported OS. Please install Node.js version 18 and npm manually. Afterwards add npm to PATH with this command: export PATH="$PATH:$(npm bin -g)"' >> toDo.txt
+        echo "Also install treesitter with this command: sudo npm install -g tree-sitter-cli" >> toDo.txt
         exit 1
     fi
 fi

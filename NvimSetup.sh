@@ -1,6 +1,8 @@
 #!/bin/bash
 # Exit immediately if a command exits with a non-zero status
 set -e
+DISTRO=$(lsb_release -is 2>/dev/null)
+
 
 # Function to print messages
 print_message() {
@@ -61,9 +63,30 @@ if [ -d "$CONFIG_DIR" ]; then
     mv "$CONFIG_DIR" "$CONFIG_DIR.bak"
 fi
 
-wget https://go.dev/dl/go1.24.0.linux-amd64.tar.gz
-sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.24.0.linux-amd64.tar.gz
-export PATH=$PATH:/usr/local/go/bin
+print_message "Installing golang"
+if command -v go &>/dev/null; then
+    echo "go is already installed."
+else
+    if [[ "$DISTRO" == "Ubuntu" ]]; then
+        sudo apt install -y golang-any
+    
+    elif [[ "$DISTRO" == "Debian" ]]; then
+        sudo apt install -y golang
+    
+    elif [ -f "/etc/arch-release" ]; then
+        sudo pacman -S --noconfirm go
+    
+    elif [ -f "/etc/fedora-release" ]; then
+        sudo dnf install -y go
+    
+    elif grep -qi "opensuse" /etc/os-release; then
+        sudo zypper install -y go
+
+    else
+        echo "Unsupported OS. Please install GO manually."
+        exit 1
+    fi
+fi
 
 git clone "$CONFIG_REPO" "$CONFIG_DIR"
 

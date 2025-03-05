@@ -73,34 +73,6 @@ nvim +PlugInstall +qall &
 
 sleep 300
 
-# Install Node.js version 18 and npm (for general tooling)
-print_message "Installing Node.js version 18 and npm"
-if command -v npm &>/dev/null; then
-    echo "npm is already installed."
-else
-    if [ -f /etc/debian_version ]; then
-        curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-        sudo apt install -y nodejs npm
-    elif [ -f "/etc/fedora-release" ]; then
-        curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
-        sudo dnf install -y nodejs npm
-    elif [ -f /etc/redhat-release ]; then
-        curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
-        sudo yum install -y nodejs
-    elif grep -qi "opensuse" /etc/os-release; then
-        sudo zypper install -y nodejs npm
-    elif [ "$(uname)" == "Darwin" ]; then
-        brew install node@18
-        brew link --force node@18
-    else
-        echo "Unsupported OS. Please install Node.js version 18 and npm manually."
-        exit 1
-    fi
-fi
-
-# Ensure npm is in PATH
-export PATH="$PATH:$(npm bin -g)"
-
 # Verify npm installation
 if ! command -v npm &>/dev/null; then
     echo "npm is not installed correctly. Please check the installation and try again."

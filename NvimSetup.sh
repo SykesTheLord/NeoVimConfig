@@ -141,3 +141,4 @@ if ! command -v tree-sitter &>/dev/null; then
 fi
 
 print_message "Setup complete! You can now start Neovim with 'nvim'."
+rm NvimSetup.sh

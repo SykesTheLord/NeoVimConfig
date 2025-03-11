@@ -11,7 +11,7 @@ Plug 'hrsh7th/cmp-nvim-lsp'                   " LSP source for nvim-cmp
 Plug 'hrsh7th/cmp-buffer'                     " Buffer words source
 Plug 'hrsh7th/cmp-path'                       " Filesystem paths source
 Plug 'hrsh7th/cmp-cmdline'                    " Vim command-line source
-Plug 'L3MON4D3/LuaSnip'                       " Snippet engine
+Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp'}                      " Snippet engine
 Plug 'saadparwaiz1/cmp_luasnip'               " Snippet source for nvim-cmp
 Plug 'rafamadriz/friendly-snippets'           " Predefined snippet sets
 Plug 'ray-x/cmp-sql'                          " SQL completion source
@@ -80,87 +80,24 @@ require("mason-lspconfig").setup({
     automatic_installation = true,
 })
 
+-- Setup snippets
+
+
+local ls = require("luasnip")
+
+vim.keymap.set({"i"}, "<C-K>", function() ls.expand() end, {silent = true})
+vim.keymap.set({"i", "s"}, "<C-L>", function() ls.jump( 1) end, {silent = true})
+vim.keymap.set({"i", "s"}, "<C-J>", function() ls.jump(-1) end, {silent = true})
+
+vim.keymap.set({"i", "s"}, "<C-E>", function()
+	if ls.choice_active() then
+		ls.change_choice(1)
+	end
+end, {silent = true})
+
+require("luasnip.loaders.from_vscode").lazy_load()
+
 local lspconfig = require("lspconfig")
-local capabilities = require("cmp_nvim_lsp").default_capabilities()
-
--- Set up LSP servers with basic capabilities (OmniSharp configured separately)
-lspconfig.clangd.setup { capabilities = capabilities }
-lspconfig.eslint.setup { capabilities = capabilities }
-lspconfig.pyright.setup { capabilities = capabilities }
-lspconfig.jsonls.setup { capabilities = capabilities }
-lspconfig.dockerls.setup { capabilities = capabilities }
-lspconfig.bashls.setup { capabilities = capabilities }
-lspconfig.docker_compose_language_service.setup { capabilities = capabilities }
-lspconfig.jdtls.setup { capabilities = capabilities }
-lspconfig.lua_ls.setup {
-    capabilities = capabilities,
-    settings = { Lua = {
-        completion = { callSnippet = "Replace" },
-        diagnostics = { globals = {"vim"} }
-    }}
-}
-lspconfig.marksman.setup { capabilities = capabilities }
-lspconfig.powershell_es.setup { capabilities = capabilities }
-lspconfig.terraformls.setup { capabilities = capabilities }
-lspconfig.sqls.setup { capabilities = capabilities }
-lspconfig.vimls.setup { capabilities = capabilities }
-lspconfig.bicep.setup { capabilities = capabilities }
-lspconfig.yamlls.setup {
-    capabilities = capabilities,
-    filetypes = { "yaml", "yml" },
-    root_dir = function() return vim.loop.cwd() end,
-    settings = {
-      yaml = {
-        validate = true,
-        schemaStore = { enable = true, url = "https://www.schemastore.org/api/json/catalog.json" },
-        schemas = { ["https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json"] = "azure-pipelines.yaml" }
-      }
-    }
-}
-
--- Setup OmniSharp (C#) LSP with .NET
--- (Requires .NET SDK in PATH; uses omnisharp-extended for improved navigation)
-local lsp_util = require("lspconfig.util")
-local function project_root(fname)
-  -- Look for .sln, .csproj, or .git in the ancestry
-  return lsp_util.root_pattern("*.sln", "*.csproj", ".git")(fname) or lsp_util.path.dirname(fname)
-end
-
-require('lspconfig').omnisharp.setup({
-  -- 1. Specify the OmniSharp executable (if not in PATH or not handled by Mason)
-  cmd = { "dotnet", vim.fn.expand("~/.local/share/nvim/mason/packages/omnisharp/libexec/OmniSharp.dll"), "--languageserver" },
-  -- (Or simply "omnisharp" if it's in your PATH)
-
-  -- 2. Set the root directory to find the solution or project
-  root_dir = require('lspconfig').util.root_pattern("*.sln", "*.csproj"),
-
-  -- 3. Disable semantic tokens to avoid the multiline range bug
-  on_attach = function(client, bufnr)
-    if client.name == "omnisharp" then
-      client.server_capabilities.semanticTokensProvider = nil
-    end
-    -- ... (your other on_attach code, keymaps, etc.)
-  end,
-
-  -- 4. OmniSharp-specific settings to load projects and resolve dependencies
-  settings = {
-    MsBuild = {
-      LoadProjectsOnDemand = false  -- load all projects, not just open file's project
-    },
-    RoslynExtensionsOptions = {
-      EnableImportCompletion = true,  -- enable auto-import suggestions
-      EnableAnalyzersSupport = true,  -- enable Roslyn analyzers (optional, but useful)
-      AnalyzeOpenDocumentsOnly = false  -- analyze whole project, not just open files
-    },
-    DotNet = {
-      EnablePackageRestore = true  -- allow OmniSharp to restore missing packages
-    },
-    Sdk = {
-      IncludePrereleases = true    -- use preview SDKs if needed (for latest .NET)
-    }
-  }
-})
-
 
 -- Define a custom function to determine project root using common markers.
 local lsp_util = require("lspconfig.util")
@@ -267,6 +204,87 @@ cmp.setup.cmdline(":", {
   }, {
     { name = "cmdline", option = { ignore_cmds = { "Man", "!" } } }
   })
+})
+
+
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+-- Set up LSP servers with basic capabilities (OmniSharp configured separately)
+lspconfig.clangd.setup { capabilities = capabilities }
+lspconfig.eslint.setup { capabilities = capabilities }
+lspconfig.pyright.setup { capabilities = capabilities }
+lspconfig.jsonls.setup { capabilities = capabilities }
+lspconfig.dockerls.setup { capabilities = capabilities }
+lspconfig.bashls.setup { capabilities = capabilities }
+lspconfig.docker_compose_language_service.setup { capabilities = capabilities }
+lspconfig.jdtls.setup { capabilities = capabilities }
+lspconfig.lua_ls.setup {
+    capabilities = capabilities,
+    settings = { Lua = {
+        completion = { callSnippet = "Replace" },
+        diagnostics = { globals = {"vim"} }
+    }}
+}
+lspconfig.marksman.setup { capabilities = capabilities }
+lspconfig.powershell_es.setup { capabilities = capabilities }
+lspconfig.terraformls.setup { capabilities = capabilities }
+lspconfig.sqls.setup { capabilities = capabilities }
+lspconfig.vimls.setup { capabilities = capabilities }
+lspconfig.bicep.setup { capabilities = capabilities }
+lspconfig.yamlls.setup {
+    capabilities = capabilities,
+    filetypes = { "yaml", "yml" },
+    root_dir = function() return vim.loop.cwd() end,
+    settings = {
+      yaml = {
+        validate = true,
+        schemaStore = { enable = true, url = "https://www.schemastore.org/api/json/catalog.json" },
+        schemas = { ["https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json"] = "azure-pipelines.yaml" }
+      }
+    }
+}
+
+-- Setup OmniSharp (C#) LSP with .NET
+-- (Requires .NET SDK in PATH; uses omnisharp-extended for improved navigation)
+local lsp_util = require("lspconfig.util")
+local function project_root(fname)
+  -- Look for .sln, .csproj, or .git in the ancestry
+  return lsp_util.root_pattern("*.sln", "*.csproj", ".git")(fname) or lsp_util.path.dirname(fname)
+end
+
+require('lspconfig').omnisharp.setup({
+  -- 1. Specify the OmniSharp executable (if not in PATH or not handled by Mason)
+  cmd = { "dotnet", vim.fn.expand("~/.local/share/nvim/mason/packages/omnisharp/libexec/OmniSharp.dll"), "--languageserver" },
+  -- (Or simply "omnisharp" if it's in your PATH)
+
+  -- 2. Set the root directory to find the solution or project
+  root_dir = require('lspconfig').util.root_pattern("*.sln", "*.csproj"),
+
+  -- 3. Disable semantic tokens to avoid the multiline range bug
+  on_attach = function(client, bufnr)
+    if client.name == "omnisharp" then
+      client.server_capabilities.semanticTokensProvider = nil
+    end
+    -- ... (your other on_attach code, keymaps, etc.)
+  end,
+
+  -- 4. OmniSharp-specific settings to load projects and resolve dependencies
+  settings = {
+    MsBuild = {
+      LoadProjectsOnDemand = false  -- load all projects, not just open file's project
+    },
+    RoslynExtensionsOptions = {
+      EnableImportCompletion = true,  -- enable auto-import suggestions
+      EnableAnalyzersSupport = true,  -- enable Roslyn analyzers (optional, but useful)
+      AnalyzeOpenDocumentsOnly = false  -- analyze whole project, not just open files
+    },
+    DotNet = {
+      EnablePackageRestore = true  -- allow OmniSharp to restore missing packages
+    },
+    Sdk = {
+      IncludePrereleases = true    -- use preview SDKs if needed (for latest .NET)
+    }
+  }
 })
 
 -- Clipboard integration for WSL/Wayland/X11

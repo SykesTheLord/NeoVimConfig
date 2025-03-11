@@ -128,7 +128,7 @@ end
 
 require('lspconfig').omnisharp.setup({
   -- 1. Specify the OmniSharp executable (if not in PATH or not handled by Mason)
-  cmd = { "dotnet", vim.fn.expand("~/.local/share/nvim/mason/packages/omnisharp/libexec/OmniSharp.dll", "--languageserver" },
+  cmd = { "dotnet", vim.fn.expand("~/.local/share/nvim/mason/packages/omnisharp/libexec/OmniSharp.dll"), "--languageserver" },
   -- (Or simply "omnisharp" if it's in your PATH)
 
   -- 2. Set the root directory to find the solution or project

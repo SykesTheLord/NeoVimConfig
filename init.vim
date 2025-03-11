@@ -347,6 +347,7 @@ let g:NERDTreeFileLines = 1                  " Show number of lines in file"
 
 let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols = {} 
 let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['cs'] = ''
+let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['tf'] = ''
 
 
 " ========== Key Mappings ========== "

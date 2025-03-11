@@ -26,7 +26,7 @@ Plug 'aquasecurity/vim-trivy'                 " Trivy integration
 Plug 'lewis6991/gitsigns.nvim'                " Git change signs
 Plug 'nvim-treesitter/nvim-treesitter-context' " Show code context at top
 Plug 'hiphish/rainbow-delimiters.nvim'        " Rainbow brackets
-Plug 'ryanoasis/vim-devicons' 
+Plug 'ryanoasis/vim-devicons'
 call plug#end()
 
 " ========== Basic Settings ==========
@@ -120,29 +120,53 @@ lspconfig.yamlls.setup {
 
 -- Setup OmniSharp (C#) LSP with .NET
 -- (Requires .NET SDK in PATH; uses omnisharp-extended for improved navigation)
-lspconfig.omnisharp.setup {
-    cmd = { "dotnet", vim.fn.expand("~/.local/share/nvim/mason/packages/omnisharp/libexec/OmniSharp.dll") },
-    settings = {
-      FormattingOptions = {
-        EnableEditorConfigSupport = true,
-        OrganizeImports = nil,
-      },
-      MsBuild = {
-        LoadProjectsOnDemand = nil,
-      },
-      RoslynExtensionsOptions = {
-        EnableAnalyzersSupport = true,
-        EnableImportCompletion = true,
-        AnalyzeOpenDocumentsOnly = nil,
-      },
-      Sdk = {
-        IncludePrereleases = true,
-      },
+local lsp_util = require("lspconfig.util")
+local function project_root(fname)
+  -- Look for .sln, .csproj, or .git in the ancestry
+  return lsp_util.root_pattern("*.sln", "*.csproj", ".git")(fname) or lsp_util.path.dirname(fname)
+end
+
+require('lspconfig').omnisharp.setup({
+  -- 1. Specify the OmniSharp executable (if not in PATH or not handled by Mason)
+  -- cmd = { "dotnet", vim.fn.expand("~/.local/share/nvim/mason/packages/omnisharp/libexec/OmniSharp.dll", "--languageserver" },
+  -- (Or simply "omnisharp" if it's in your PATH)
+
+  -- 2. Set the root directory to find the solution or project
+  root_dir = require('lspconfig').util.root_pattern("*.sln", "*.csproj"),
+
+  -- 3. Disable semantic tokens to avoid the multiline range bug
+  on_attach = function(client, bufnr)
+    if client.name == "omnisharp" then
+      client.server_capabilities.semanticTokensProvider = nil
+    end
+    -- ... (your other on_attach code, keymaps, etc.)
+  end,
+
+  -- 4. OmniSharp-specific settings to load projects and resolve dependencies
+  settings = {
+    MsBuild = {
+      LoadProjectsOnDemand = false  -- load all projects, not just open file's project
     },
-    capabilities = capabilities,
-}
+    RoslynExtensionsOptions = {
+      EnableImportCompletion = true,  -- enable auto-import suggestions
+      EnableAnalyzersSupport = true,  -- enable Roslyn analyzers (optional, but useful)
+      AnalyzeOpenDocumentsOnly = false  -- analyze whole project, not just open files
+    },
+    DotNet = {
+      EnablePackageRestore = true  -- allow OmniSharp to restore missing packages
+    },
+    Sdk = {
+      IncludePrereleases = true    -- use preview SDKs if needed (for latest .NET)
+    }
+  }
+})
 
 
+-- Define a custom function to determine project root using common markers.
+local lsp_util = require("lspconfig.util")
+local function get_project_root()
+  return lsp_util.root_pattern(".git", "package.json", "pyproject.toml", "setup.py")(vim.fn.expand("%:p")) or vim.fn.getcwd()
+end
 
 -- nvim-cmp (completion) setup
 local cmp = require("cmp")
@@ -151,11 +175,54 @@ require("luasnip.loaders.from_vscode").lazy_load()  -- load VSCode-style snippet
 
 cmp.setup({
   snippet = {
-    expand = function(args) luasnip.lsp_expand(args.body) end,
+    expand = function(args)
+      luasnip.lsp_expand(args.body)
+    end,
   },
   window = {
     completion = cmp.config.window.bordered(),
     documentation = cmp.config.window.bordered(),
+  },
+  formatting = {
+    format = function(entry, vim_item)
+      local icons = {
+        Text = "",
+        Method = "",
+        Function = "󰊕",
+        Constructor = "",
+        Field = "",
+        Variable = "",
+        Class = "",
+        Interface = "",
+        Module = "",
+        Property = "",
+        Unit = "",
+        Value = "",
+        Enum = "",
+        Keyword = "",
+        Snippet = "",
+        Color = "",
+        File = "",
+        Reference = "",
+        Folder = "",
+        EnumMember = "",
+        Constant = "",
+        Struct = "פּ",
+        Event = "",
+        Operator = "",
+        TypeParameter = ""
+      }
+      vim_item.kind = string.format("%s %s", icons[vim_item.kind] or "", vim_item.kind)
+      vim_item.menu = ({
+        nvim_lsp = "[LSP]",
+        luasnip = "[Snippet]",
+        buffer = "[Buffer]",
+        path = "[Path]",
+        sql = "[SQL]",
+        nvim_lsp_signature_help = "[Signature]",
+      })[entry.source.name] or ""
+      return vim_item
+    end,
   },
   mapping = cmp.mapping.preset.insert({
     ["<C-b>"]     = cmp.mapping.scroll_docs(-4),
@@ -171,7 +238,7 @@ cmp.setup({
                       else
                         fallback()
                       end
-                    end, {"i","s"}),
+                    end, {"i", "s"}),
     ["<S-Tab>"]   = cmp.mapping(function(fallback)
                       if cmp.visible() then
                         cmp.select_prev_item()
@@ -180,23 +247,23 @@ cmp.setup({
                       else
                         fallback()
                       end
-                    end, {"i","s"}),
+                    end, {"i", "s"}),
   }),
   sources = cmp.config.sources({
     { name = "nvim_lsp" },
     { name = "luasnip" },
     { name = "buffer" },
-    { name = "path" },
+    { name = "path", option = { get_cwd = get_project_root } },
     { name = "sql" },
     { name = "nvim_lsp_signature_help" }
   })
 })
 
--- Enable command-line completions (for ":" commands)
+-- Setup command-line (:) completion for NeoVim commands.
 cmp.setup.cmdline(":", {
   mapping = cmp.mapping.preset.cmdline(),
   sources = cmp.config.sources({
-    { name = "path" }
+    { name = "path", option = { get_cwd = get_project_root } }
   }, {
     { name = "cmdline", option = { ignore_cmds = { "Man", "!" } } }
   })
@@ -335,16 +402,15 @@ vim.g.rainbow_delimiters = {
 }
 EOF
 
-" ========== NERDTree Auto-open on Startup =========="
+" ========== NERDTree Auto-open on Startup ==========
 autocmd StdinReadPre * let s:std_in=1
 autocmd VimEnter * if argc() == 0 && !exists('s:std_in') | NERDTree | endif
 let g:NERDTreeShowHidden=1                   " Show hidden files"
 let g:NERDTreeIgnore=['^node_modules$']      " Ignore node_modules folders"
-let g:NERDTreeFileLines = 1                  " Show number of lines in file"
+let g:NERDTreeFileLines = 1                   " Show number of lines in file"
 
-" ========== Setup Vim-Devicons ============"
-" change the default dictionary mappings for file extension matches"
-
+" ========== Setup Vim-Devicons ============
+" change the default dictionary mappings for file extension matches
 let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols = {} 
 let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['cs'] = ''
 let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['tf'] = ''
@@ -352,10 +418,10 @@ let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['tf'] = ''
 let g:WebDevIconsUnicodeDecorateFileNodesExactSymbols = {} 
 let g:WebDevIconsUnicodeDecorateFileNodesExactSymbols['.envrc'] = '󰒓'
 
-" ========== Key Mappings ========== "
-" Terminal mode mapping: allow <Esc> to exit terminal insert mode"
+" ========== Key Mappings ==========
+" Terminal mode mapping: allow <Esc> to exit terminal insert mode
 tnoremap <Esc> <C-\><C-n>
-" Window navigation with Alt+h/j/k/l (works in terminal if Alt is not trapped) "
+" Window navigation with Alt+h/j/k/l (works in terminal if Alt is not trapped)
 inoremap <A-h> <C-\><C-N><C-w>h
 inoremap <A-j> <C-\><C-N><C-w>j
 inoremap <A-k> <C-\><C-N><C-w>k
@@ -366,17 +432,18 @@ nnoremap <A-j> <C-w>j
 nnoremap <A-k> <C-w>k
 nnoremap <A-l> <C-w>l
 
-" Leader key set to '-' "
+" Leader key set to '-'
 let mapleader = "-"
 
-" OmniSharp-Extended (C#) LSP keybindings (use Telescope for references/defs)"
+" OmniSharp-Extended (C#) LSP keybindings (use Telescope for references/defs)
 nnoremap gr <cmd>lua require('omnisharp_extended').telescope_lsp_references()<CR>
 nnoremap gd <cmd>lua require('omnisharp_extended').telescope_lsp_definition({ jump_type = "vsplit" })<CR>
 nnoremap <leader>D <cmd>lua require('omnisharp_extended').telescope_lsp_type_definition()<CR>
 nnoremap gi <cmd>lua require('omnisharp_extended').telescope_lsp_implementation()<CR>
 
-" Telescope fuzzy-finder shortcuts"
+" Telescope fuzzy-finder shortcuts
 nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<CR>
 nnoremap <leader>fg <cmd>lua require('telescope.builtin').live_grep()<CR>
 nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<CR>
 nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<CR>
+

@@ -5,7 +5,7 @@ call plug#begin('~/.local/share/nvim/plugged')
 Plug 'williamboman/mason.nvim'
 Plug 'williamboman/mason-lspconfig.nvim'
 Plug 'neovim/nvim-lspconfig'
-Plug 'Hoffs/omnisharp-extended-lsp.nvim'      " C# LSP extensions
+" Plug 'Hoffs/omnisharp-extended-lsp.nvim'       C# LSP extensions
 Plug 'hrsh7th/nvim-cmp'                       " Completion engine
 Plug 'hrsh7th/cmp-nvim-lsp'                   " LSP source for nvim-cmp
 Plug 'hrsh7th/cmp-buffer'                     " Buffer words source
@@ -27,6 +27,7 @@ Plug 'lewis6991/gitsigns.nvim'                " Git change signs
 Plug 'nvim-treesitter/nvim-treesitter-context' " Show code context at top
 Plug 'hiphish/rainbow-delimiters.nvim'        " Rainbow brackets
 Plug 'ryanoasis/vim-devicons'
+Plug 'Decodetalkers/csharpls-extended-lsp.nvim' 
 call plug#end()
 
 " ========== Basic Settings ==========
@@ -75,7 +76,8 @@ require("mason-lspconfig").setup({
         "cmake",
         "vimls",
         "bicep",
-        "sqls"
+        "sqls",
+        "csharp_ls"
     },
     automatic_installation = true,
 })
@@ -210,28 +212,28 @@ cmp.setup.cmdline(":", {
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 -- Set up LSP servers with basic capabilities (OmniSharp configured separately)
-lspconfig.clangd.setup { capabilities = capabilities }
-lspconfig.eslint.setup { capabilities = capabilities }
-lspconfig.pyright.setup { capabilities = capabilities }
-lspconfig.jsonls.setup { capabilities = capabilities }
-lspconfig.dockerls.setup { capabilities = capabilities }
-lspconfig.bashls.setup { capabilities = capabilities }
-lspconfig.docker_compose_language_service.setup { capabilities = capabilities }
-lspconfig.jdtls.setup { capabilities = capabilities }
-lspconfig.lua_ls.setup {
+require'lspconfig'.clangd.setup { capabilities = capabilities }
+require'lspconfig'.eslint.setup { capabilities = capabilities }
+require'lspconfig'.pyright.setup { capabilities = capabilities }
+require'lspconfig'.jsonls.setup { capabilities = capabilities }
+require'lspconfig'.dockerls.setup { capabilities = capabilities }
+require'lspconfig'.bashls.setup { capabilities = capabilities }
+require'lspconfig'.docker_compose_language_service.setup { capabilities = capabilities }
+require'lspconfig'.jdtls.setup { capabilities = capabilities }
+require'lspconfig'.lua_ls.setup {
     capabilities = capabilities,
     settings = { Lua = {
         completion = { callSnippet = "Replace" },
         diagnostics = { globals = {"vim"} }
     }}
 }
-lspconfig.marksman.setup { capabilities = capabilities }
-lspconfig.powershell_es.setup { capabilities = capabilities }
-lspconfig.terraformls.setup { capabilities = capabilities }
-lspconfig.sqls.setup { capabilities = capabilities }
-lspconfig.vimls.setup { capabilities = capabilities }
-lspconfig.bicep.setup { capabilities = capabilities }
-lspconfig.yamlls.setup {
+require'lspconfig'.marksman.setup { capabilities = capabilities }
+require'lspconfig'.powershell_es.setup { capabilities = capabilities }
+require'lspconfig'.terraformls.setup { capabilities = capabilities }
+require'lspconfig'.sqls.setup { capabilities = capabilities }
+require'lspconfig'.vimls.setup { capabilities = capabilities }
+require'lspconfig'.bicep.setup { capabilities = capabilities }
+require'lspconfig'.yamlls.setup {
     capabilities = capabilities,
     filetypes = { "yaml", "yml" },
     root_dir = function() return vim.loop.cwd() end,
@@ -244,48 +246,45 @@ lspconfig.yamlls.setup {
     }
 }
 
--- Setup OmniSharp (C#) LSP with .NET
--- (Requires .NET SDK in PATH; uses omnisharp-extended for improved navigation)
-local lsp_util = require("lspconfig.util")
-local function project_root(fname)
-  -- Look for .sln, .csproj, or .git in the ancestry
-  return lsp_util.root_pattern("*.sln", "*.csproj", ".git")(fname) or lsp_util.path.dirname(fname)
-end
-
-require('lspconfig').omnisharp.setup({
-  -- 1. Specify the OmniSharp executable (if not in PATH or not handled by Mason)
-  cmd = { "dotnet", vim.fn.expand("~/.local/share/nvim/mason/packages/omnisharp/libexec/OmniSharp.dll"), "--languageserver" },
-  -- (Or simply "omnisharp" if it's in your PATH)
-
-  -- 2. Set the root directory to find the solution or project
-  root_dir = require('lspconfig').util.root_pattern("*.sln", "*.csproj"),
-
-  -- 3. Disable semantic tokens to avoid the multiline range bug
-  on_attach = function(client, bufnr)
-    if client.name == "omnisharp" then
-      client.server_capabilities.semanticTokensProvider = nil
-    end
-    -- ... (your other on_attach code, keymaps, etc.)
-  end,
-
-  -- 4. OmniSharp-specific settings to load projects and resolve dependencies
-  settings = {
-    MsBuild = {
-      LoadProjectsOnDemand = false  -- load all projects, not just open file's project
+require'lspconfig'.omnisharp.setup {
+    cmd = { "dotnet", vim.fn.expand("~/.local/share/nvim/mason/packages/omnisharp/libexec/OmniSharp.dll") },
+    settings = {
+      FormattingOptions = {
+        EnableEditorConfigSupport = true,
+        OrganizeImports = nil,
+      },
+      MsBuild = {
+        LoadProjectsOnDemand = nil,
+      },
+      RoslynExtensionsOptions = {
+        EnableAnalyzersSupport = true,
+        EnableImportCompletion = true,
+        AnalyzeOpenDocumentsOnly = nil,
+      },
+      Sdk = {
+        IncludePrereleases = true,
+      },
     },
-    RoslynExtensionsOptions = {
-      EnableImportCompletion = true,  -- enable auto-import suggestions
-      EnableAnalyzersSupport = true,  -- enable Roslyn analyzers (optional, but useful)
-      AnalyzeOpenDocumentsOnly = false  -- analyze whole project, not just open files
-    },
-    DotNet = {
-      EnablePackageRestore = true  -- allow OmniSharp to restore missing packages
-    },
-    Sdk = {
-      IncludePrereleases = true    -- use preview SDKs if needed (for latest .NET)
-    }
-  }
-})
+    capabilities = capabilities,
+}
+
+
+local pid = vim.fn.getpid()
+-- On linux/darwin if using a release build, otherwise under scripts/OmniSharp(.Core)(.cmd)
+-- on Windows
+-- local omnisharp_bin = "/path/to/omnisharp/OmniSharp.exe"
+
+local config = {
+  handlers = {
+    ["textDocument/definition"] = require('csharpls_extended').handler,
+    ["textDocument/typeDefinition"] = require('csharpls_extended').handler,
+  },
+  cmd = { "csharp-ls" },
+  -- rest of your settings
+  capabilities = capabilities,
+}
+
+require'lspconfig'.csharp_ls.setup(config)
 
 -- Clipboard integration for WSL/Wayland/X11
 if vim.fn.has("wsl") == 1 then
@@ -396,7 +395,7 @@ require("telescope").setup {
     }
   }
 }
-
+require("telescope").load_extension("csharpls_definition")
 -- Rainbow Delimiters (colored brackets) configuration
 local rainbow_delimiters = require("rainbow-delimiters")
 vim.g.rainbow_delimiters = {
@@ -453,11 +452,6 @@ nnoremap <A-l> <C-w>l
 " Leader key set to '-'
 let mapleader = "-"
 
-" OmniSharp-Extended (C#) LSP keybindings (use Telescope for references/defs)
-nnoremap gr <cmd>lua require('omnisharp_extended').telescope_lsp_references()<CR>
-nnoremap gd <cmd>lua require('omnisharp_extended').telescope_lsp_definition({ jump_type = "vsplit" })<CR>
-nnoremap <leader>D <cmd>lua require('omnisharp_extended').telescope_lsp_type_definition()<CR>
-nnoremap gi <cmd>lua require('omnisharp_extended').telescope_lsp_implementation()<CR>
 
 " Telescope fuzzy-finder shortcuts
 nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<CR>

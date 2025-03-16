@@ -54,14 +54,20 @@ colorscheme dracula     " Set colorscheme (requires dracula.nvim)
 " ========== LSP, Mason, and Completion Setup ==========
 lua <<EOF
 -- Mason Package Manager setup
-require("mason").setup()
+require("mason").setup({
+    ensure_installed = {
+        'trivy',
+    },
+})
+
+-- Setup 
 
 -- Mason-LSPconfig integration (automatic LSP installation)
 require("mason-lspconfig").setup({
     ensure_installed = {
         "clangd",
         "eslint",
-        "pyright",
+        "jedi_language_server",
         "jsonls",
         "yamlls",
         -- "omnisharp", -- (Handled separately below)
@@ -107,10 +113,12 @@ local function get_project_root()
   return lsp_util.root_pattern(".git", "package.json", "pyproject.toml", "setup.py")(vim.fn.expand("%:p")) or vim.fn.getcwd()
 end
 
--- nvim-cmp (completion) setup
+-- Define capabilities using cmp-nvim-lsp
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+-- nvim-cmp setup
 local cmp = require("cmp")
 local luasnip = require("luasnip")
-require("luasnip.loaders.from_vscode").lazy_load()  -- load VSCode-style snippets
 
 cmp.setup({
   snippet = {
@@ -164,29 +172,29 @@ cmp.setup({
     end,
   },
   mapping = cmp.mapping.preset.insert({
-    ["<C-b>"]     = cmp.mapping.scroll_docs(-4),
-    ["<C-f>"]     = cmp.mapping.scroll_docs(4),
+    ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+    ["<C-f>"] = cmp.mapping.scroll_docs(4),
     ["<C-Space>"] = cmp.mapping.complete(),
-    ["<C-e>"]     = cmp.mapping.abort(),
-    ["<CR>"]      = cmp.mapping.confirm({ select = false }),
-    ["<Tab>"]     = cmp.mapping(function(fallback)
-                      if cmp.visible() then
-                        cmp.select_next_item()
-                      elseif luasnip.expand_or_jumpable() then
-                        luasnip.expand_or_jump()
-                      else
-                        fallback()
-                      end
-                    end, {"i", "s"}),
-    ["<S-Tab>"]   = cmp.mapping(function(fallback)
-                      if cmp.visible() then
-                        cmp.select_prev_item()
-                      elseif luasnip.jumpable(-1) then
-                        luasnip.jump(-1)
-                      else
-                        fallback()
-                      end
-                    end, {"i", "s"}),
+    ["<C-e>"] = cmp.mapping.abort(),
+    ["<CR>"] = cmp.mapping.confirm({ select = false }),
+    ["<Tab>"] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_next_item()
+      elseif luasnip.expand_or_jumpable() then
+        luasnip.expand_or_jump()
+      else
+        fallback()
+      end
+    end, {"i", "s"}),
+    ["<S-Tab>"] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item()
+      elseif luasnip.jumpable(-1) then
+        luasnip.jump(-1)
+      else
+        fallback()
+      end
+    end, {"i", "s"}),
   }),
   sources = cmp.config.sources({
     { name = "nvim_lsp" },
@@ -208,32 +216,104 @@ cmp.setup.cmdline(":", {
   })
 })
 
+-- LSP on_attach function
+local on_attach = function(client, bufnr)
+  local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+  local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
 
-local capabilities = require("cmp_nvim_lsp").default_capabilities()
+  -- Enable completion triggered by <c-x><c-o>
+  buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
 
--- Set up LSP servers with basic capabilities (OmniSharp configured separately)
-require'lspconfig'.clangd.setup { capabilities = capabilities }
-require'lspconfig'.eslint.setup { capabilities = capabilities }
-require'lspconfig'.pyright.setup { capabilities = capabilities }
-require'lspconfig'.jsonls.setup { capabilities = capabilities }
-require'lspconfig'.dockerls.setup { capabilities = capabilities }
-require'lspconfig'.bashls.setup { capabilities = capabilities }
-require'lspconfig'.docker_compose_language_service.setup { capabilities = capabilities }
-require'lspconfig'.jdtls.setup { capabilities = capabilities }
-require'lspconfig'.lua_ls.setup {
+  -- Mappings.
+  local opts = { noremap=true, silent=true }
+
+  -- LSP Telescope mappings
+  buf_set_keymap('n', 'gd', '<Cmd>Telescope lsp_definitions<CR>', opts)
+  buf_set_keymap('n', 'gr', '<Cmd>Telescope lsp_references<CR>', opts)
+  buf_set_keymap('n', 'gi', '<Cmd>Telescope lsp_implementations<CR>', opts)
+  buf_set_keymap('n', '<space>D', '<Cmd>Telescope lsp_type_definitions<CR>', opts)
+  buf_set_keymap('n', '<space>ds', '<Cmd>Telescope lsp_document_symbols<CR>', opts)
+  buf_set_keymap('n', '<space>ws', '<Cmd>Telescope lsp_workspace_symbols<CR>', opts)
+
+  -- Other LSP mappings
+  buf_set_keymap('n', 'K', '<Cmd>lua vim.lsp.buf.hover()<CR>', opts)
+  buf_set_keymap('n', '<C-k>', '<Cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+  buf_set_keymap('n', '<space>rn', '<Cmd>lua vim.lsp.buf.rename()<CR>', opts)
+  buf_set_keymap('n', '<space>ca', '<Cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+  buf_set_keymap('n', '<space>e', '<Cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
+  buf_set_keymap('n', '[d', '<Cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
+  buf_set_keymap('n', ']d', '<Cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
+  buf_set_keymap('n', '<space>q', '<Cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
+end
+
+-- Set up LSP servers with capabilities
+local nvim_lsp = require'lspconfig'
+nvim_lsp.clangd.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+nvim_lsp.eslint.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+} 
+nvim_lsp.jedi_language_server.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+nvim_lsp.jsonls.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+nvim_lsp.dockerls.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+nvim_lsp.bashls.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+nvim_lsp.docker_compose_language_service.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+} 
+nvim_lsp.jdtls.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+nvim_lsp.lua_ls.setup {
+    on_attach = on_attach,
     capabilities = capabilities,
     settings = { Lua = {
         completion = { callSnippet = "Replace" },
         diagnostics = { globals = {"vim"} }
     }}
 }
-require'lspconfig'.marksman.setup { capabilities = capabilities }
-require'lspconfig'.powershell_es.setup { capabilities = capabilities }
-require'lspconfig'.terraformls.setup { capabilities = capabilities }
-require'lspconfig'.sqls.setup { capabilities = capabilities }
-require'lspconfig'.vimls.setup { capabilities = capabilities }
-require'lspconfig'.bicep.setup { capabilities = capabilities }
-require'lspconfig'.yamlls.setup {
+nvim_lsp.marksman.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+nvim_lsp.powershell_es.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+nvim_lsp.terraformls.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+nvim_lsp.sqls.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+nvim_lsp.vimls.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+nvim_lsp.bicep.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
+nvim_lsp.yamlls.setup {
+    on_attach = on_attach,
     capabilities = capabilities,
     filetypes = { "yaml", "yml" },
     root_dir = function() return vim.loop.cwd() end,
@@ -246,7 +326,7 @@ require'lspconfig'.yamlls.setup {
     }
 }
 
-require'lspconfig'.omnisharp.setup {
+nvim_lsp.omnisharp.setup {
     cmd = { "dotnet", vim.fn.expand("~/.local/share/nvim/mason/packages/omnisharp/libexec/OmniSharp.dll") },
     settings = {
       FormattingOptions = {
@@ -274,7 +354,7 @@ local pid = vim.fn.getpid()
 -- on Windows
 -- local omnisharp_bin = "/path/to/omnisharp/OmniSharp.exe"
 
-local config = {
+local csConfig = {
   handlers = {
     ["textDocument/definition"] = require('csharpls_extended').handler,
     ["textDocument/typeDefinition"] = require('csharpls_extended').handler,
@@ -284,7 +364,7 @@ local config = {
   capabilities = capabilities,
 }
 
-require'lspconfig'.csharp_ls.setup(config)
+require'lspconfig'.csharp_ls.setup(csConfig)
 
 -- Clipboard integration for WSL/Wayland/X11
 if vim.fn.has("wsl") == 1 then

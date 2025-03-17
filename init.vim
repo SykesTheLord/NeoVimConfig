@@ -4,8 +4,8 @@
 call plug#begin('~/.local/share/nvim/plugged')
 Plug 'williamboman/mason.nvim'
 Plug 'williamboman/mason-lspconfig.nvim'
+Plug 'WhoIsSethDaniel/mason-tool-installer.nvim'
 Plug 'neovim/nvim-lspconfig'
-" Plug 'Hoffs/omnisharp-extended-lsp.nvim'       C# LSP extensions
 Plug 'hrsh7th/nvim-cmp'                       " Completion engine
 Plug 'hrsh7th/cmp-nvim-lsp'                   " LSP source for nvim-cmp
 Plug 'hrsh7th/cmp-buffer'                     " Buffer words source
@@ -28,6 +28,11 @@ Plug 'nvim-treesitter/nvim-treesitter-context' " Show code context at top
 Plug 'hiphish/rainbow-delimiters.nvim'        " Rainbow brackets
 Plug 'ryanoasis/vim-devicons'
 Plug 'Decodetalkers/csharpls-extended-lsp.nvim' 
+Plug 'mfussenegger/nvim-dap'
+Plug 'nvim-neotest/nvim-nio'
+Plug 'rcarriga/nvim-dap-ui'
+Plug 'mfussenegger/nvim-lint'
+Plug 'mhartington/formatter.nvim'
 call plug#end()
 
 " ========== Basic Settings ==========
@@ -54,13 +59,39 @@ colorscheme dracula     " Set colorscheme (requires dracula.nvim)
 " ========== LSP, Mason, and Completion Setup ==========
 lua <<EOF
 -- Mason Package Manager setup
-require("mason").setup({
-    ensure_installed = {
-        'trivy',
-    },
-})
+require("mason").setup()
 
--- Setup 
+-- Mason-Tool-Installer
+require('mason-tool-installer').setup {
+    ensure_installed = {
+        'trivy', -- Linter for Various issues
+        'csharpier', -- C# formatter
+        'netcoredbg', -- C# debugger
+        'black', -- Python formatter
+        'debugpy', -- Python debugger
+        'pylint', -- Python Linter
+        'eslint_d',-- Javascript and TypeScript linter
+        'jsonlint', -- JSON linter
+        'beautysh', -- Bash, Csh, Zsh formatter 
+        'shellcheck', -- Bash linter
+        'prettierd', -- Angular, CSS, Flow, GraphQL, HTML, JSON, JSX, JavaScript, LESS, Markdown, SCSS, TypeScript, Vue, and YAML formatter
+        'java-debug-adapter', -- Java debugger
+        'clang-format', -- C, C++, JSON, Java, and JavaScript formatter
+        'stylua', -- Lua formatter
+        'luacheck', -- Lua Linter 
+        'cmakelang', -- CMake formatter and linter
+        'sqlfluff', -- SQL linter
+        'sql-formatter', -- SQL formatter
+        'vale', -- Markdown linter
+        'tfsec', -- Terraform linter
+        'cpplint', -- C++ linter
+        'cmakelint', -- CMake linter
+        'htmlhint', -- HTML linter
+        'checkstyle' -- Java linter
+    },
+    automatic_installation = true,
+    auto_update = true,
+}
 
 -- Mason-LSPconfig integration (automatic LSP installation)
 require("mason-lspconfig").setup({
@@ -365,6 +396,137 @@ local csConfig = {
 }
 
 require'lspconfig'.csharp_ls.setup(csConfig)
+
+
+-- Setup formatters
+-- Utilities for creating configurations
+local util = require "formatter.util"
+
+-- Provides the Format, FormatWrite, FormatLock, and FormatWriteLock commands
+require("formatter").setup {
+  -- Enable or disable logging
+  logging = true,
+  -- Set the log level
+  log_level = vim.log.levels.WARN,
+  -- All formatter configurations are opt-in
+  filetype = {
+    -- Formatter configurations for filetype "lua" go here
+    -- and will be executed in order
+    lua = {
+        -- "formatter.filetypes.lua" defines default configurations for the
+        -- "lua" filetype
+        require("formatter.filetypes.lua").stylua,
+    }, 
+    cs = {
+        require("formatter.filetypes.cs").csharpier,
+    },
+    c = {
+        require("formatter.filetypes.c").clangformat,
+    },
+    cmake = {
+        require("formatter.filetypes.cmake").cmakelang,
+    },
+    cpp = {
+       require("formatter.filetypes.cpp").clangformat, 
+    },
+    css = {
+       require("formatter.filetypes.css").prettierd, 
+    },
+    html = {
+       require("formatter.filetypes.html").prettierd, 
+    },
+    java = {
+       require("formatter.filetypes.java").clangformat, 
+    },
+    javascript = {
+       require("formatter.filetypes.javascript").prettierd, 
+    },
+    json = {
+       require("formatter.filetypes.json").prettierd, 
+    },
+    markdown = {
+       require("formatter.filetypes.markdown").prettierd, 
+    },
+    python = {
+       require("formatter.filetypes.python").black,
+    },
+    sh = {
+        function()
+            local shiftwidth = vim.opt.shiftwidth:get()
+            local expandtab = vim.opt.expandtab:get()
+
+            if not expandtab then
+                shiftwidth = 0
+            end
+
+            return {
+                exe = "beautysh",
+                args = {
+                    "-i",
+                    shiftwidth,
+                    util.escape_path(util.get_current_buffer_file_path()),
+                },
+            }
+        end
+    },
+    sql = {
+       require("formatter.filetypes.sql").sql_formatter, 
+    },
+    typescript = {
+       require("formatter.filetypes.typescript").prettierd, 
+    },
+    yaml = {
+       require("formatter.filetypes.yaml").prettierd, 
+    },
+    zsh = {
+       require("formatter.filetypes.zsh").beautysh, 
+    },
+  },
+}
+
+
+-- Auto format on saving
+local augroup = vim.api.nvim_create_augroup
+local autocmd = vim.api.nvim_create_autocmd
+augroup("__formatter__", { clear = true })
+autocmd("BufWritePost", {
+	group = "__formatter__",
+	command = ":FormatWrite",
+})
+
+
+-- Setup Linting
+
+require('lint').linters_by_ft = {
+  markdown = {'vale'},
+  cs = {'trivy'},
+  terraform = {'tfsec', 'trivy'},
+  c = {'trivy'},
+  cpp = {'trivy', 'cpplint'},
+  cmake = {'cmakelint'},
+  html = {'htmlhint'},
+  java = {'checkstyle', 'trivy'},
+  javascript = {'eslint_d'},
+  typescript = {'eslint_d'},
+  json = {'jsonlint'},
+  python = {'pylint'},
+  sh = {'shellcheck'},
+  sql = {'sqlfluff'},
+  dockerfile = {'trivy'}
+}
+
+vim.api.nvim_create_autocmd({ "BufWritePost" }, {
+  callback = function()
+
+    -- try_lint without arguments runs the linters defined in `linters_by_ft`
+    -- for the current filetype
+    require("lint").try_lint()
+  end,
+})
+
+
+-- Setup Debuggers
+
 
 -- Clipboard integration for WSL/Wayland/X11
 if vim.fn.has("wsl") == 1 then

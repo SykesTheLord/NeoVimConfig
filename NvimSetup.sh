@@ -68,16 +68,16 @@ if command -v go &>/dev/null; then
 else
     if [[ "$DISTRO" == "Ubuntu" ]]; then
         sudo apt install -y golang-any
-    
+
     elif [[ "$DISTRO" == "Debian" ]]; then
         sudo apt install -y golang
-    
+
     elif [ -f "/etc/arch-release" ]; then
         sudo pacman -S --noconfirm go
-    
+
     elif [ -f "/etc/fedora-release" ]; then
         sudo dnf install -y go
-    
+
     elif grep -qi "opensuse" /etc/os-release; then
         sudo zypper install -y go
 
@@ -88,11 +88,16 @@ fi
 
 git clone "$CONFIG_REPO" "$CONFIG_DIR"
 
+
+
 # Install plugins
 print_message "Installing plugins"
 nvim +PlugInstall +qall &
 
-sleep 300
+sleep 50
+
+luarocks config local_by_default true
+sudo zypper install lua51-devel
 
 # Install Node.js version 18 and npm (for general tooling)
 print_message "Installing Node.js version 18 and npm"

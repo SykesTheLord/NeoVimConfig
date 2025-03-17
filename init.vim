@@ -37,7 +37,6 @@ call plug#end()
 
 " ========== Basic Settings ==========
 set number              " Show line numbers
-set relativenumber      " Relative line numbers
 syntax on               " Enable syntax highlighting
 " set guifont=CaskaydiaCove\ Nerd\ Font 11
 set mouse=a             " Enable mouse support

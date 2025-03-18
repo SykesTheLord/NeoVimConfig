@@ -675,6 +675,7 @@ let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['tf'] = ''
 
 let g:WebDevIconsUnicodeDecorateFileNodesExactSymbols = {} 
 let g:WebDevIconsUnicodeDecorateFileNodesExactSymbols['.envrc'] = '󰒓'
+let g:WebDevIconsUnicodeDecorateFileNodesExactSymbols['azure-pipelines.yaml'] = ''
 
 " ========== Key Mappings ==========
 " Terminal mode mapping: allow <Esc> to exit terminal insert mode

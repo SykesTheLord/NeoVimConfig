@@ -33,6 +33,7 @@ Plug 'nvim-neotest/nvim-nio'
 Plug 'rcarriga/nvim-dap-ui'
 Plug 'mfussenegger/nvim-lint'
 Plug 'mhartington/formatter.nvim'
+Plug 'tpope/vim-obsession'
 call plug#end()
 
 " ========== Basic Settings ==========
@@ -514,14 +515,6 @@ require('lint').linters_by_ft = {
   dockerfile = {'trivy'}
 }
 
-vim.api.nvim_create_autocmd({ "BufWritePost" }, {
-  callback = function()
-
-    -- try_lint without arguments runs the linters defined in `linters_by_ft`
-    -- for the current filetype
-    require("lint").try_lint()
-  end,
-})
 
 
 -- Setup Debuggers
@@ -660,15 +653,15 @@ vim.g.rainbow_delimiters = {
 }
 EOF
 
-" ========== NERDTree Auto-open on Startup ==========
+" ========== NERDTree Auto-open on Startup =========="
 autocmd StdinReadPre * let s:std_in=1
 autocmd VimEnter * if argc() == 0 && !exists('s:std_in') | NERDTree | endif
 let g:NERDTreeShowHidden=1                   " Show hidden files"
 let g:NERDTreeIgnore=['^node_modules$']      " Ignore node_modules folders"
 let g:NERDTreeFileLines = 1                   " Show number of lines in file"
 
-" ========== Setup Vim-Devicons ============
-" change the default dictionary mappings for file extension matches
+" ========== Setup Vim-Devicons ============"
+" change the default dictionary mappings for file extension matches"
 let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols = {} 
 let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['cs'] = ''
 let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['tf'] = ''
@@ -677,10 +670,10 @@ let g:WebDevIconsUnicodeDecorateFileNodesExactSymbols = {}
 let g:WebDevIconsUnicodeDecorateFileNodesExactSymbols['.envrc'] = '󰒓'
 let g:WebDevIconsUnicodeDecorateFileNodesExactSymbols['azure-pipelines.yaml'] = ''
 
-" ========== Key Mappings ==========
-" Terminal mode mapping: allow <Esc> to exit terminal insert mode
+" ========== Key Mappings =========="
+" Terminal mode mapping: allow <Esc> to exit terminal insert mode"
 tnoremap <Esc> <C-\><C-n>
-" Window navigation with Alt+h/j/k/l (works in terminal if Alt is not trapped)
+" Window navigation with Alt+h/j/k/l (works in terminal if Alt is not trapped)"
 inoremap <A-h> <C-\><C-N><C-w>h
 inoremap <A-j> <C-\><C-N><C-w>j
 inoremap <A-k> <C-\><C-N><C-w>k
@@ -691,13 +684,16 @@ nnoremap <A-j> <C-w>j
 nnoremap <A-k> <C-w>k
 nnoremap <A-l> <C-w>l
 
-" Leader key set to '-'
+" Leader key set to '-'"
 let mapleader = "-"
 
 
-" Telescope fuzzy-finder shortcuts
+" Telescope fuzzy-finder shortcuts"
 nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<CR>
 nnoremap <leader>fg <cmd>lua require('telescope.builtin').live_grep()<CR>
 nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<CR>
 nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<CR>
 
+
+" Require linter"
+au BufWritePost * lua require('lint').try_lint()

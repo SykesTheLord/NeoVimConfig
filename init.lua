@@ -55,12 +55,12 @@ vim.cmd("set encoding=utf-8") -- Ensure UTF-8 encoding
 vim.cmd("set history=5000") -- Increase command history size
 vim.cmd("filetype plugin indent on") -- Enable filetype-specific plugins & indent
 
-vim.cmd("!silent colorscheme dracula") -- Set colorscheme (requires dracula.nvim)
+vim.cmd("silent colorscheme dracula") -- Set colorscheme (requires dracula.nvim)
 
 -- Leader key set to '-'
-vim.cmd("let mapleader = '-'")
+vim.g.mapleader = "-"
 
-local mason = require("mason")
+local mason = require("masonConfig")
 mason.setup()
 
 local debug_setup = require("debugging")

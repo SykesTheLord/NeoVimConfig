@@ -1,67 +1,3 @@
-" Neovim 0.10.4 init.vim - Updated for WSL environment
-
-" ========== Plugin Installation (vim-plug) ==========
-call plug#begin('~/.local/share/nvim/plugged')
-Plug 'williamboman/mason.nvim'
-Plug 'williamboman/mason-lspconfig.nvim'
-Plug 'WhoIsSethDaniel/mason-tool-installer.nvim'
-Plug 'neovim/nvim-lspconfig'
-Plug 'hrsh7th/nvim-cmp'                       " Completion engine
-Plug 'hrsh7th/cmp-nvim-lsp'                   " LSP source for nvim-cmp
-Plug 'hrsh7th/cmp-buffer'                     " Buffer words source
-Plug 'hrsh7th/cmp-path'                       " Filesystem paths source
-Plug 'hrsh7th/cmp-cmdline'                    " Vim command-line source
-Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp'}                      " Snippet engine
-Plug 'saadparwaiz1/cmp_luasnip'               " Snippet source for nvim-cmp
-Plug 'rafamadriz/friendly-snippets'           " Predefined snippet sets
-Plug 'ray-x/cmp-sql'                          " SQL completion source
-Plug 'hrsh7th/cmp-nvim-lsp-signature-help'    " Signature help source
-Plug 'nvim-lua/plenary.nvim'                  " Lua utilities (required by Telescope)
-Plug 'nvim-telescope/telescope.nvim'          " Fuzzy finder
-Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " Treesitter syntax
-Plug 'preservim/nerdtree'                     " File tree explorer
-Plug 'mfussenegger/nvim-dap'                  " Debug Adapter Protocol
-Plug 'Mofiqul/dracula.nvim'                   " Colorscheme
-Plug 'aquasecurity/vim-trivy'                 " Trivy integration
-Plug 'lewis6991/gitsigns.nvim'                " Git change signs
-Plug 'nvim-treesitter/nvim-treesitter-context' " Show code context at top
-Plug 'hiphish/rainbow-delimiters.nvim'        " Rainbow brackets
-Plug 'ryanoasis/vim-devicons'
-Plug 'Decodetalkers/csharpls-extended-lsp.nvim' 
-Plug 'mfussenegger/nvim-dap'
-Plug 'nvim-neotest/nvim-nio'
-Plug 'rcarriga/nvim-dap-ui'
-Plug 'mfussenegger/nvim-lint'
-Plug 'mhartington/formatter.nvim'
-Plug 'tpope/vim-obsession'
-Plug 'Weissle/persistent-breakpoints.nvim'
-call plug#end()
-
-" ========== Basic Settings ==========
-set number              " Show line numbers
-syntax on               " Enable syntax highlighting
-" set guifont=CaskaydiaCove\ Nerd\ Font 11
-set mouse=a             " Enable mouse support
-set hidden              " Allow unsaved buffers in background
-set cursorline          " Highlight current line
-set expandtab           " Use spaces instead of tabs
-set tabstop=4           " 1 tab = 4 spaces
-set shiftwidth=4        " Indent by 4 spaces
-set autoindent          " Copy indent from current line on newline
-set smartindent         " Smarter autoindent for new lines
-set completeopt=menu,menuone,noselect  " Better completion menu
-set clipboard=unnamedplus            " Use system clipboard by default
-set encoding=utf-8      " Ensure UTF-8 encoding
-set history=5000        " Increase command history size
-filetype plugin indent on  " Enable filetype-specific plugins & indent
-
-colorscheme dracula     " Set colorscheme (requires dracula.nvim)
-
-" Leader key set to '-'"
-let mapleader = "-"
-
-" ========== LSP, Mason, and Completion Setup ==========
-lua <<EOF
 -- Mason Package Manager setup
 require("mason").setup()
 
@@ -277,7 +213,7 @@ local on_attach = function(client, bufnr)
   buf_set_keymap('n', '[d', '<Cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
   buf_set_keymap('n', ']d', '<Cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
   buf_set_keymap('n', '<space>q', '<Cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
-  -- [[ Previous config 
+  --[[ Previous config 
   buf_set_keymap('n', '<C-k>', '<Cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
   buf_set_keymap('n', '<C-r>', '<Cmd>lua vim.lsp.buf.rename()<CR>', opts)
   buf_set_keymap('n', '<leader>ca', '<Cmd>lua vim.lsp.buf.code_action()<CR>', opts)
@@ -804,47 +740,4 @@ vim.g.rainbow_delimiters = {
     'RainbowDelimiterCyan',
   },
 }
-EOF
 
-" ========== NERDTree Auto-open on Startup =========="
-autocmd StdinReadPre * let s:std_in=1
-autocmd VimEnter * if argc() == 0 && !exists('s:std_in') | NERDTree | endif
-let g:NERDTreeShowHidden=1                   " Show hidden files"
-let g:NERDTreeIgnore=['^node_modules$']      " Ignore node_modules folders"
-let g:NERDTreeFileLines = 1                   " Show number of lines in file"
-
-" ========== Setup Vim-Devicons ============"
-" change the default dictionary mappings for file extension matches"
-let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols = {} 
-let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['cs'] = ''
-let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['tf'] = ''
-
-let g:WebDevIconsUnicodeDecorateFileNodesExactSymbols = {} 
-let g:WebDevIconsUnicodeDecorateFileNodesExactSymbols['.envrc'] = '󰒓'
-let g:WebDevIconsUnicodeDecorateFileNodesExactSymbols['azure-pipelines.yaml'] = ''
-
-" ========== Key Mappings =========="
-" Terminal mode mapping: allow <Esc> to exit terminal insert mode"
-tnoremap <Esc> <C-\><C-n>
-" Window navigation with Alt+h/j/k/l (works in terminal if Alt is not trapped)"
-inoremap <A-h> <C-\><C-N><C-w>h
-inoremap <A-j> <C-\><C-N><C-w>j
-inoremap <A-k> <C-\><C-N><C-w>k
-inoremap <A-l> <C-\><C-N><C-w>l
-
-nnoremap <A-h> <C-w>h
-nnoremap <A-j> <C-w>j
-nnoremap <A-k> <C-w>k
-nnoremap <A-l> <C-w>l
-
-
-
-" Telescope fuzzy-finder shortcuts"
-nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<CR>
-nnoremap <leader>fg <cmd>lua require('telescope.builtin').live_grep()<CR>
-nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<CR>
-nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<CR>
-
-
-" Require linter"
-au BufWritePost * lua require('lint').try_lint()

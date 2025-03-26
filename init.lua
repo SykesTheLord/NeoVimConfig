@@ -75,6 +75,9 @@ lspconfig.setup()
 local lint = require("lintConfig")
 lint.setup()
 
+local format = require("formatterConfig")
+format.setup()
+
 local start = require("start")
 start.setup()
 

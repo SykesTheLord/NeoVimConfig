@@ -96,8 +96,28 @@ nvim +PlugInstall +qall &
 
 sleep 50
 
+
 luarocks config local_by_default true
-sudo zypper install lua51-devel
+if [[ "$DISTRO" == "Ubuntu" ]]; then
+    sudo apt install -y lua51-devel
+
+elif [[ "$DISTRO" == "Debian" ]]; then
+    sudo apt install -y lua51-devel
+
+elif [ -f "/etc/arch-release" ]; then
+    # Arch Linux setup
+    sudo pacman -S --noconfirm lua51-devel
+
+elif [ -f "/etc/fedora-release" ]; then
+    # Fedora setup
+    sudo dnf install -y lua51-devel
+elif grep -qi "opensuse" /etc/os-release; then
+    # openSUSE setup
+    sudo zypper install lua51-devel
+
+else
+    echo "lua51-devel install failed" >> toDo.txt
+fi
 
 # Install Node.js version 18 and npm (for general tooling)
 print_message "Installing Node.js version 18 and npm"

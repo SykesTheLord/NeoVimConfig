@@ -17,13 +17,6 @@ function M.setup()
 			end
 		end,
 	})
-	-- Autocommand: Run linter on BufWritePost for any file.
-	vim.api.nvim_create_autocmd("BufWritePost", {
-		pattern = "*",
-		callback = function()
-			require("lint").try_lint()
-		end,
-	})
 end
 
 return M

@@ -72,7 +72,7 @@ snippets.setup()
 local lspconfig = require("autocmds.lsp_autocmds")
 lspconfig.setup()
 
-local lint = require("lint")
+local lint = require("lintConfig")
 lint.setup()
 
 local start = require("start")

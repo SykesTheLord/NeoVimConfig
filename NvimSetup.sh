@@ -20,6 +20,8 @@ elif [ -f "/etc/fedora-release" ]; then
     sudo dnf install -y neovim
 elif grep -qi "opensuse" /etc/os-release; then
     sudo zypper install -y neovim
+elif [ "$DISTRO" == "Ubuntu" ]]; then
+        sudo apt install -y neovim
 else
     curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
     sudo rm -rf /opt/nvim

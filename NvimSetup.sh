@@ -88,7 +88,6 @@ fi
 
 git clone "$CONFIG_REPO" "$CONFIG_DIR"
 
-
 luarocks config local_by_default true
 if [[ "$DISTRO" == "Ubuntu" ]]; then
     sudo apt install -y lua51-devel

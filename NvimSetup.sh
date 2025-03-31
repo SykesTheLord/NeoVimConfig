@@ -89,14 +89,6 @@ fi
 git clone "$CONFIG_REPO" "$CONFIG_DIR"
 
 
-
-# Install plugins
-print_message "Installing plugins"
-nvim +PlugInstall +qall &
-
-sleep 50
-
-
 luarocks config local_by_default true
 if [[ "$DISTRO" == "Ubuntu" ]]; then
     sudo apt install -y lua51-devel
@@ -163,6 +155,12 @@ if ! command -v tree-sitter &>/dev/null; then
     echo "tree-sitter CLI is not installed correctly. Please check the installation and try again."
     exit 1
 fi
+
+# Install plugins
+print_message "Installing plugins"
+nvim +PlugInstall +qall &
+
+sleep 50
 
 print_message "Setup complete! You can now start Neovim with 'nvim'."
 rm NvimSetup.sh

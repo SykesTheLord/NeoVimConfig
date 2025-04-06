@@ -88,22 +88,41 @@ fi
 
 git clone "$CONFIG_REPO" "$CONFIG_DIR"
 
-luarocks config local_by_default true
 if [[ "$DISTRO" == "Ubuntu" ]]; then
-    sudo apt install -y lua51-devel
+    wget https://www.lua.org/ftp/lua-5.4.7.tar.gz
+    sudo apt install -y build-essential libreadline-dev
+    wget https://luarocks.github.io/luarocks/releases/luarocks-3.11.1.tar.gz
+    tar -xzf lua-5.4.7.tar.gz -C lua
+    cd lua
+    make all test
+    sudo make install
+    cd ..
+    tar -xzf luarocks-3.11.1.tar.gz -C luarocks
+    cd luarocks
+    ./configure --with-lua-include=/usr/local/include
+    make
+    sudo make install
+    cd
+    sudo apt install -y python3-venv python3-pip
+    luarocks config local_by_default true
+    sudo apt install -y xclip
 
 elif [[ "$DISTRO" == "Debian" ]]; then
+    luarocks config local_by_default true
     sudo apt install -y lua51-devel
 
 elif [ -f "/etc/arch-release" ]; then
     # Arch Linux setup
+    luarocks config local_by_default true
     sudo pacman -S --noconfirm lua51-devel
 
 elif [ -f "/etc/fedora-release" ]; then
     # Fedora setup
+    luarocks config local_by_default true
     sudo dnf install -y lua51-devel
 elif grep -qi "opensuse" /etc/os-release; then
     # openSUSE setup
+    luarocks config local_by_default true
     sudo zypper install lua51-devel
 
 else

@@ -89,20 +89,7 @@ fi
 git clone "$CONFIG_REPO" "$CONFIG_DIR"
 
 if [[ "$DISTRO" == "Ubuntu" ]]; then
-    wget https://www.lua.org/ftp/lua-5.4.7.tar.gz
-    sudo apt install -y build-essential libreadline-dev
-    wget https://luarocks.github.io/luarocks/releases/luarocks-3.11.1.tar.gz
-    tar -xzf lua-5.4.7.tar.gz -C lua
-    cd lua
-    make all test
-    sudo make install
-    cd ..
-    tar -xzf luarocks-3.11.1.tar.gz -C luarocks
-    cd luarocks
-    ./configure --with-lua-include=/usr/local/include
-    make
-    sudo make install
-    cd
+    sudo apt install -y lua5.1 luarocks
     sudo apt install -y python3-venv python3-pip
     luarocks config local_by_default true
     sudo apt install -y xclip

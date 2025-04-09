@@ -21,10 +21,14 @@ elif [ -f "/etc/fedora-release" ]; then
 elif grep -qi "opensuse" /etc/os-release; then
     sudo zypper install -y neovim
 else
-    curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
-    sudo rm -rf /opt/nvim
-    sudo tar -C /opt -xzf nvim-linux-x86_64.tar.gz
-    export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+    {
+        am -i nvim
+        } || {
+        curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
+        sudo rm -rf /opt/nvim
+        sudo tar -C /opt -xzf nvim-linux-x86_64.tar.gz
+        export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+    }
 fi
 
 # Install unzip if not installed
@@ -66,7 +70,7 @@ print_message "Installing golang"
 if command -v go &>/dev/null; then
     echo "go is already installed."
 else
-    if [[ "$DISTRO" == "Ubuntu" ]]; then
+    if [[ "$DISTRO" == "Ubuntu" || "$DISTRO" == "Neon" ]]; then
         sudo apt install -y golang-any
 
     elif [[ "$DISTRO" == "Debian" ]]; then
@@ -88,7 +92,7 @@ fi
 
 git clone "$CONFIG_REPO" "$CONFIG_DIR"
 
-if [[ "$DISTRO" == "Ubuntu" ]]; then
+if [[ "$DISTRO" == "Ubuntu" || "$DISTRO" == "Neon" ]]; then
     sudo apt install -y lua5.1 luarocks
     sudo apt install -y python3-venv python3-pip
     luarocks config local_by_default true

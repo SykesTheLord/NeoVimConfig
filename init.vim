@@ -688,7 +688,7 @@ if vim.fn.has("wsl") == 1 then
     },
     cache_enabled = 0,
   }
-elseif vim.env.XDG_SESSION_TYPE == "wayland" or vim.env.WAYLAND_DISPLAY then
+elseif (vim.env.XDG_SESSION_TYPE == "wayland" or vim.env.WAYLAND_DISPLAY) and not string.find(vim.fn.system('lsb_release -is 2>/dev/null'):lower(), 'neon') then
   -- Wayland: use wl-copy/wl-paste
   vim.g.clipboard = {
     name = "wayland",
@@ -702,8 +702,8 @@ elseif vim.env.XDG_SESSION_TYPE == "wayland" or vim.env.WAYLAND_DISPLAY then
     },
     cache_enabled = 0,
   }
-else
-  -- X11: use xclip as fallback
+else  
+    -- X11: use xclip as fallback
   vim.g.clipboard = {
     name = "x11",
     copy = {

@@ -842,6 +842,7 @@ nnoremap <A-l> <C-w>l
 nnoremap ^ }
 nnoremap & ^
 nnoremap Å {
+nnoremap ¤ $
 
 " Telescope fuzzy-finder shortcuts"
 nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<CR>

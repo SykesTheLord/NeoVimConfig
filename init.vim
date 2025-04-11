@@ -837,7 +837,11 @@ nnoremap <A-j> <C-w>j
 nnoremap <A-k> <C-w>k
 nnoremap <A-l> <C-w>l
 
+" Remap to handle DA keyboard better
 
+nnoremap ^ }
+nnoremap & ^
+nnoremap Å {
 
 " Telescope fuzzy-finder shortcuts"
 nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<CR>

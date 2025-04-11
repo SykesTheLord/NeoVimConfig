@@ -47,6 +47,10 @@ This section summarizes common Vim key bindings, organized by mode. These are th
     _Jump to the beginning or end of a line._
   - `gg` / `G`  
     _Jump to the first/last line of the file._
+  - `Å` / `^`
+    _Jump to the previous/next paragraph._
+  - `&`
+    _Jump to the next non-blank character._
 
 - **Editing & Text Operations:**
 
@@ -172,19 +176,19 @@ When an LSP server attaches to a buffer, the following Normal mode key mappings 
 
 Telescope, the fuzzy finder, is bound to the following Normal mode shortcuts:
 
-- **`ff`**  
+- **`-ff`**  
   _Action:_ Opens the file finder (`telescope.builtin.find_files()`).  
   _Description:_ Search and open files.
 
-- **`fg`**  
+- **`-fg`**  
   _Action:_ Launches live grep (`telescope.builtin.live_grep()`).  
   _Description:_ Search text across files.
 
-- **`fb`**  
+- **`-fb`**  
   _Action:_ Lists open buffers (`telescope.builtin.buffers()`).  
   _Description:_ Switch between open buffers.
 
-- **`fh`**  
+- **`-fh`**  
   _Action:_ Displays help tags (`telescope.builtin.help_tags()`).  
   _Description:_ Access Vim’s help documentation.
 
@@ -246,6 +250,30 @@ Adjustments for the Danish keyboard layout include the following remappings:
 ## Debugger Shortcuts
 
 The configuration integrates debugging support via [nvim-dap](https://github.com/mfussenegger/nvim-dap). Key debugger actions—such as continue, step over, step into, and step out—are defined using `vim.api.nvim_set_keymap`. Customize these mappings further as needed.
+
+- **`<F5>`**
+  _Action:_ Continue debugging.
+  _Command:_ `lua require'dap'.continue()`
+
+- **`<F10>`**
+  _Action:_ Step over the next function call.
+  _Command:_ `lua require'dap'.step_over()`
+
+- **`<F11>`**
+  _Action:_ Step into the next function call.
+  _Command:_ `lua require'dap'.step_into()`
+
+- **`<F12>`**
+  _Action:_ Step out of the current function.
+  _Command:_ `lua require'dap'.step_out()`
+
+- **`<leader>dr`**
+  _Action:_ Open REPL UI.
+  _Command:_ `lua require'dap'.repl.open()`
+
+- **`<leader>du`**
+  _Action:_ Open debugger UI.
+  _Command:_ `lua require'dapui'.toggle()`
 
 ---
 

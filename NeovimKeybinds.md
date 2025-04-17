@@ -163,7 +163,7 @@ When an LSP server attaches to a buffer, the following Normal mode key mappings 
   _Action:_ Shows diagnostics for the current line (`vim.lsp.diagnostic.show_line_diagnostics()`).  
   _Description:_ Provides error and warning messages.
 
-- **`[d` and **`]d`\*\*  
+- **`[d`** and **`]d`**  
   _Actions:_ Navigate to previous (`vim.lsp.diagnostic.goto_prev()`) and next (`vim.lsp.diagnostic.goto_next()`) diagnostics.
 
 - **`q`**  

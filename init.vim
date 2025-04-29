@@ -441,7 +441,15 @@ require("formatter").setup {
         require("formatter.filetypes.lua").stylua,
     }, 
     cs = {
-        require("formatter.filetypes.cs").csharpier,
+        function()
+            return {
+                exe = "csharpier",
+                args = {
+                    "format",
+                },
+                stdin = true,
+            }
+        end
     },
     c = {
         require("formatter.filetypes.c").clangformat,

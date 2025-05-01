@@ -123,6 +123,7 @@ require("mason-lspconfig").setup({
     automatic_installation = true,
 })
 
+-- Force CSharp-ls version
 local registry = require("mason-registry")
 local pkg      = registry.get_package("csharp-language-server")
 if not pkg:is_installed() then

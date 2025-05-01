@@ -119,10 +119,16 @@ require("mason-lspconfig").setup({
         "vimls",
         "bicep",
         "sqls",
-        "csharp_ls"
     },
     automatic_installation = true,
 })
+
+local registry = require("mason-registry")
+local pkg      = registry.get_package("csharp-language-server")
+if not pkg:is_installed() then
+  pkg:install { version = "0.16.0" }
+end
+
 
 -- Setup snippets
 

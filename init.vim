@@ -689,7 +689,7 @@ keymap("n", "<leader>bc", "<cmd>lua require('persistent-breakpoints.api').clear_
 keymap("n", "<leader>lp", "<cmd>lua require('persistent-breakpoints.api').set_log_point()<cr>", opts)
 
 -- Clipboard integration for WSL/Wayland/X11
-if vim.fn.has("wsl") == 1 then
+if vim.fn.has("wsl") == 1 and not string.find(vim.fn.system('lsb_release -is 2>/dev/null'):lower(), 'ubuntu') then
   -- WSL: Use win32yank.exe to access Windows clipboard
   vim.g.clipboard = {
     name = "win32yank-wsl",
@@ -703,7 +703,7 @@ if vim.fn.has("wsl") == 1 then
     },
     cache_enabled = 0,
   }
-elseif (vim.env.XDG_SESSION_TYPE == "wayland" or vim.env.WAYLAND_DISPLAY) and not string.find(vim.fn.system('lsb_release -is 2>/dev/null'):lower(), 'neon') then
+elseif (vim.env.XDG_SESSION_TYPE == "wayland" or vim.env.WAYLAND_DISPLAY) and not string.find(vim.fn.system('lsb_release -is 2>/dev/null'):lower(), 'neon') and not vim.fn.has("wsl") == 1 then
   -- Wayland: use wl-copy/wl-paste
   vim.g.clipboard = {
     name = "wayland",

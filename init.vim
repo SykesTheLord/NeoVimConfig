@@ -703,7 +703,7 @@ if vim.fn.has("wsl") == 1 and not string.find(vim.fn.system('lsb_release -is 2>/
     },
     cache_enabled = 0,
   }
-elseif (vim.env.XDG_SESSION_TYPE == "wayland" or vim.env.WAYLAND_DISPLAY) and not string.find(vim.fn.system('lsb_release -is 2>/dev/null'):lower(), 'neon') and not vim.fn.has("wsl") == 1 then
+elseif (vim.env.XDG_SESSION_TYPE == "wayland" or vim.env.WAYLAND_DISPLAY) and not string.find(vim.fn.system('lsb_release -is 2>/dev/null'):lower(), 'neon') and not vim.fn.has("wsl") == 1 or string.find(vim.fn.system('lsb_release -is 2>/dev/null'):lower(), 'manjarolinux') then
   -- Wayland: use wl-copy/wl-paste
   vim.g.clipboard = {
     name = "wayland",

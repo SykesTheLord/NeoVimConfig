@@ -106,6 +106,7 @@ elif [[ "$DISTRO" == "Debian" ]]; then
 elif [ -f "/etc/arch-release" ]; then
     # Arch Linux setup
     sudo pacman -S --noconfirm lua51-devel
+    sudo pacman -S --noconfirm luarocks
     luarocks config local_by_default true
 
 elif [ -f "/etc/fedora-release" ]; then

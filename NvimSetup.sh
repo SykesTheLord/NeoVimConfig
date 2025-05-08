@@ -45,6 +45,8 @@ if ! command -v unzip &>/dev/null; then
         sudo zypper install -y unzip
     elif [ "$(uname)" == "Darwin" ]; then
         brew install unzip
+    elif [ -f "/etc/arch-release" ]; then
+        sudo pacman -S --noconfirm unzip
     else
         echo "Unsupported OS. Please install unzip manually."
         exit 1
@@ -81,7 +83,6 @@ else
 
     elif [ -f "/etc/fedora-release" ]; then
         sudo dnf install -y go
-
     elif grep -qi "opensuse" /etc/os-release; then
         sudo zypper install -y go
 
@@ -104,8 +105,8 @@ elif [[ "$DISTRO" == "Debian" ]]; then
 
 elif [ -f "/etc/arch-release" ]; then
     # Arch Linux setup
-    luarocks config local_by_default true
     sudo pacman -S --noconfirm lua51-devel
+    luarocks config local_by_default true
 
 elif [ -f "/etc/fedora-release" ]; then
     # Fedora setup
@@ -139,6 +140,8 @@ else
     elif [ "$(uname)" == "Darwin" ]; then
         brew install node@18
         brew link --force node@18
+    elif [ -f "/etc/arch-release" ]; then
+        sudo pacman -S --noconfirm npm
     else
         echo 'Unsupported OS. Please install Node.js version 18 and npm manually. Afterwards add npm to PATH with this command: export PATH="$PATH:$(npm bin -g)"' >> toDo.txt
         echo "Also install treesitter with this command: sudo npm install -g tree-sitter-cli" >> toDo.txt
